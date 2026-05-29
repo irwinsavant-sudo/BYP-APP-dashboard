@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chase CC — Dashboard Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#090D18;--s1:#101624;--s2:#18202E;--s3:#202B3D;--s4:#283347;
+  --bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);
+  --t1:#EEF2F8;--t2:#8B9CB8;--t3:#4F6285;
+  --amber:#F59E0B;--amber2:#D97706;--amberDim:rgba(245,158,11,0.13);--amberRing:rgba(245,158,11,0.35);
+  --teal:#10B981;--tealDim:rgba(16,185,129,0.13);
+  --blue:#60A5FA;--blueDim:rgba(96,165,250,0.13);
+  --red:#F87171;--redDim:rgba(248,113,113,0.13);
+  --gold:#FCD34D;
+  --nav:220px;--hdr:56px;--r:10px;--rsm:6px;
+}
+html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg);color:var(--t1)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--s4);border-radius:4px}
+
+/* ── SHELL ───────────────────────────── */
+.shell{display:grid;grid-template-rows:var(--hdr) 1fr;grid-template-columns:var(--nav) 1fr;height:100vh}
+
+/* ── TOPBAR ──────────────────────────── */
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 20px;background:var(--s1);border-bottom:1px solid var(--bdr);z-index:50}
+.brand{display:flex;align-items:center;gap:11px;flex-shrink:0}
+.brandmark{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#1B3A5C,#2E6DA4);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color:#fff;letter-spacing:-.5px;flex-shrink:0}
+.brand-name{font-size:14px;font-weight:700;color:var(--t1)}
+.brand-sub{font-size:11px;color:var(--t3);margin-top:1px}
+.tbsp{flex:1}
+.sysinds{display:flex;align-items:center;gap:18px;padding-right:18px;border-right:1px solid var(--bdr)}
+.sysind{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.sysdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sysdot.on{background:var(--teal);box-shadow:0 0 7px rgba(16,185,129,.55)}
+.sysdot.warn{background:var(--amber);box-shadow:0 0 7px rgba(245,158,11,.55)}
+.sysdot.off{background:var(--t3);box-shadow:none;opacity:.5}
+.sysdot.err{background:#EF4444;box-shadow:0 0 7px rgba(239,68,68,.55)}
+.sysdot.err{background:#EF4444;box-shadow:0 0 7px rgba(239,68,68,.55)}
+.clock{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--t2);padding-left:18px;letter-spacing:.3px;min-width:96px}
+
+/* ── SIDEBAR ─────────────────────────── */
+.sidebar{background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;padding:12px 8px;overflow-y:auto}
+.navlbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--t3);padding:10px 10px 5px}
+.navlbl:first-child{padding-top:4px}
+.navitem{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--rsm);cursor:pointer;font-size:13px;color:var(--t2);margin-bottom:2px;border:1px solid transparent;transition:all .15s;user-select:none;position:relative}
+.navitem:hover{background:var(--s2);color:var(--t1)}
+.navitem:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+.navitem.active{background:var(--amberDim);color:var(--amber);border-color:var(--amberRing)}
+.navitem i{font-size:18px;flex-shrink:0;width:20px;text-align:center}
+.navpill{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;min-width:18px;text-align:center}
+.navpill.amb{background:var(--amberDim);color:var(--amber);border:1px solid var(--amberRing)}
+.sidefoot{margin-top:auto;padding-top:12px;border-top:1px solid var(--bdr)}
+
+/* ── MAIN ────────────────────────────── */
+.main{overflow-y:auto;background:var(--bg)}
+.page{padding:22px 24px;display:none}
+.page.active{display:block}
+.phdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px}
+.ptitle{font-size:20px;font-weight:700;line-height:1.2}
+.psub{font-size:13px;color:var(--t2);margin-top:4px}
+.phdr-actions{display:flex;gap:8px;flex-shrink:0;align-items:center}
+
+/* ── STATS ───────────────────────────── */
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.statcard{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden}
+.statcard::after{content:'';position:absolute;top:0;right:0;width:3px;height:100%;border-radius:0 var(--r) var(--r) 0}
+.statcard.c-blue::after{background:var(--blue)}
+.statcard.c-teal::after{background:var(--teal)}
+.statcard.c-amber::after{background:var(--amber)}
+.statcard.c-white::after{background:var(--s4)}
+.statlbl{font-size:12px;color:var(--t2);margin-bottom:8px}
+.statval{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:500;line-height:1}
+.statsub{font-size:11px;color:var(--t3);margin-top:5px}
+
+/* ── CHARTS ROW ──────────────────────── */
+.chartrow{display:grid;grid-template-columns:1fr 300px;gap:12px;margin-bottom:22px}
+
+/* ── PANEL ───────────────────────────── */
+.panel{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden}
+.pnhdr{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bdr)}
+.pntitle{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;color:var(--t1)}
+
+/* ── BADGES ──────────────────────────── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600}
+.badge-pending  {background:var(--blueDim);color:var(--blue)}
+.badge-notified {background:rgba(96,165,250,.08);color:#93C5FD;border:1px solid rgba(96,165,250,.2)}
+.badge-partial  {background:var(--amberDim);color:var(--amber)}
+.badge-complete {background:var(--tealDim);color:var(--teal)}
+.badge-pushed   {background:rgba(16,185,129,.06);color:#6EE7B7;border:1px solid rgba(16,185,129,.18)}
+.badge-new      {background:rgba(139,92,246,.2);color:#A78BFA}
+.badge-overdue  {background:var(--redDim);color:var(--red)}
+
+/* ── BUTTONS ─────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:var(--rsm);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--bdr2);background:var(--s2);color:var(--t2);transition:all .15s;white-space:nowrap;font-family:'Inter',sans-serif}
+.btn:hover{background:var(--s3);color:var(--t1)}
+.btn:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+.btn-amber{background:var(--amber);border-color:var(--amber);color:#0A0E1A;font-weight:700}
+.btn-amber:hover{background:var(--amber2);border-color:var(--amber2);color:#0A0E1A}
+.btn-teal{background:var(--teal);border-color:var(--teal);color:#0A0E1A;font-weight:700}
+.btn-teal:hover{background:#0ea371;border-color:#0ea371;color:#0A0E1A}
+.btn-danger{border-color:rgba(248,113,113,.3);color:var(--red)}
+.btn-danger:hover{background:var(--redDim)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn i{font-size:16px}
+
+/* ── CHIPS ───────────────────────────── */
+.chips{display:flex;gap:6px;padding:11px 16px;border-bottom:1px solid var(--bdr);flex-wrap:wrap}
+.chip{padding:4px 13px;border:1px solid var(--bdr2);border-radius:99px;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--t2);transition:all .15s;font-family:'Inter',sans-serif}
+.chip:hover{background:var(--s2);color:var(--t1)}
+.chip:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+.chip.on{border-color:var(--amberRing);background:var(--amberDim);color:var(--amber)}
+
+/* ── TRANSACTION LIST ────────────────── */
+.txnitem{display:grid;grid-template-columns:42px 1fr 110px 120px;gap:10px;align-items:center;padding:12px 16px;cursor:pointer;border-left:3px solid transparent;border-bottom:1px solid var(--bdr);transition:background .1s}
+.txnitem:last-child{border-bottom:none}
+.txnitem:hover{background:var(--s2)}
+.txnitem:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
+.txnitem.sel{background:var(--s2);border-left-color:var(--amber)}
+.txnitem.newrow{animation:slideIn .35s ease-out}
+.merchant{font-weight:600;font-size:13px;line-height:1.3}
+.txnmeta{font-size:11px;color:var(--t3);margin-top:2px}
+.amount{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-align:right}
+.txndate{font-size:11px;color:var(--t3);text-align:right;margin-top:2px}
+
+/* ── AVATAR ──────────────────────────── */
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+
+/* ── LIVE FEED LAYOUT ────────────────── */
+.feedlayout{display:grid;grid-template-columns:1fr 340px;gap:12px;align-items:start}
+
+/* ── DETAIL PANEL ────────────────────── */
+.dempty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--t3);gap:10px;text-align:center}
+.dempty i{font-size:36px;opacity:.35}
+.dsec{padding:14px 16px;border-bottom:1px solid var(--bdr)}
+.dsec:last-child{border-bottom:none}
+.dlbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:9px}
+.dgrid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dfield{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.dfield:last-child{border-bottom:none}
+.dfname{color:var(--t3);flex:0 0 72px;font-size:11px}
+.dfval{flex:1;font-weight:500}
+.slackthread{background:var(--s2);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.slackmsg{display:flex;gap:8px;align-items:flex-start}
+.slackbubble{font-size:12px;line-height:1.55;background:var(--s3);border:1px solid var(--bdr);border-radius:8px;padding:7px 11px;flex:1}
+
+/* ── PROGRESS ────────────────────────── */
+.prog{height:4px;background:var(--s4);border-radius:2px;overflow:hidden;margin-top:4px}
+.progfill{height:100%;border-radius:2px;transition:width .4s}
+
+/* ── STATUS TABLE ────────────────────── */
+.stbl{width:100%;border-collapse:collapse;font-size:12px}
+.stbl th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);padding:10px 12px;text-align:left;border-bottom:1px solid var(--bdr);background:var(--s2);white-space:nowrap;position:sticky;top:0;z-index:1}
+.stbl td{padding:9px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.stbl tr:last-child td{border-bottom:none}
+.stbl tbody tr:hover td{background:var(--s2)}
+.stbl .mono{font-family:'JetBrains Mono',monospace}
+
+/* ── CARDHOLDER CARDS ────────────────── */
+.holdergrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.holdercard{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:20px;transition:border-color .2s}
+.holdercard:hover{border-color:var(--bdr2)}
+.holderhdr{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.holderstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);margin-bottom:14px;text-align:center}
+.hstatval{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600}
+.hstatlbl{font-size:10px;color:var(--t3);margin-top:3px}
+
+/* ── WORKFLOW CARDS ──────────────────── */
+.wfgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.wfcard{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:18px}
+.wftitle{font-size:13px;font-weight:700;display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.wfrow{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:6px 0;border-bottom:1px solid var(--bdr)}
+.wfrow:last-child{border-bottom:none}
+.wflbl{color:var(--t3)}
+.secgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:4px}
+.secitem-lbl{font-size:10px;color:var(--t3);margin-bottom:5px}
+.secitem-val{font-size:12px;font-weight:700}
+
+/* ── QB MODAL ────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(6px)}
+.overlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--bdr2);border-radius:14px;padding:28px;width:480px;max-width:92vw;animation:modalIn .25s ease-out}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:5px}
+.modal-sub{font-size:13px;color:var(--t2);margin-bottom:20px}
+.modal-list{background:var(--s2);border-radius:8px;margin-bottom:20px;overflow:hidden}
+.modal-listrow{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bdr);font-size:13px}
+.modal-listrow:last-child{border-bottom:none}
+.modal-warn{background:var(--amberDim);border:1px solid var(--amberRing);border-radius:8px;padding:11px 14px;font-size:12px;color:var(--amber);margin-bottom:20px;line-height:1.5}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* ── TOAST ───────────────────────────── */
+.toasts{position:fixed;top:66px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--s1);border:1px solid var(--bdr2);border-radius:var(--r);padding:13px 16px;min-width:300px;max-width:340px;display:flex;align-items:flex-start;gap:11px;box-shadow:0 12px 32px rgba(0,0,0,.55);animation:toastIn .3s ease-out;pointer-events:auto}
+.toast.new-txn{border-left:3px solid var(--amber)}
+.toast.success{border-left:3px solid var(--teal)}
+.toast.info{border-left:3px solid var(--blue)}
+.toast i{font-size:20px;flex-shrink:0;margin-top:1px}
+.toast-title{font-size:13px;font-weight:700;line-height:1.3}
+.toast-msg{font-size:12px;color:var(--t2);margin-top:3px;line-height:1.4}
+
+/* ── LIVE DOT ────────────────────────── */
+.livedot{width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0;animation:pulse 2s infinite}
+
+/* ── OVERVIEW RECENT ─────────────────── */
+.section-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+
+/* ── PROJECTS PAGE ───────────────────── */
+.proj-toolbar{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bdr)}
+.proj-sync{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--t3)}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;padding:16px}
+.projcard{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);padding:14px 16px;display:flex;align-items:center;gap:12px;transition:border-color .15s}
+.projcard:hover{border-color:var(--bdr2)}
+.projcard.removing{opacity:.4;pointer-events:none;animation:fadeOut .3s ease-out forwards}
+.projcode{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:3px 8px;background:var(--amberDim);color:var(--amber);border:1px solid var(--amberRing);border-radius:4px;white-space:nowrap;flex-shrink:0;letter-spacing:.5px}
+.projname{flex:1;font-size:13px;font-weight:600;line-height:1.3}
+.projdate{font-size:11px;color:var(--t3);margin-top:2px}
+.proj-remove{width:28px;height:28px;border-radius:var(--rsm);border:1px solid transparent;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t3);flex-shrink:0;transition:all .15s;font-size:16px}
+.proj-remove:hover{background:var(--redDim);border-color:rgba(248,113,113,.3);color:var(--red)}
+.proj-add-form{margin:12px 16px 4px;background:var(--s2);border:1px solid var(--amberRing);border-radius:var(--r);padding:16px;display:none}
+.proj-add-form.open{display:block;animation:slideIn .2s ease-out}
+.proj-inputs{display:grid;grid-template-columns:1fr 140px;gap:10px;margin-bottom:12px}
+.proj-input{background:var(--s1);border:1px solid var(--bdr2);border-radius:var(--rsm);padding:8px 11px;font-size:13px;color:var(--t1);font-family:'Inter',sans-serif;width:100%}
+.proj-input:focus{outline:none;border-color:var(--amber)}
+.proj-input::placeholder{color:var(--t3)}
+.proj-hint{font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.5}
+.proj-sheet-note{margin:0 16px 16px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);padding:11px 14px;font-size:12px;color:var(--t3);display:flex;gap:10px;align-items:flex-start;line-height:1.55}
+@keyframes fadeOut{to{opacity:0;transform:scale(.97)}}
+
+/* ── STATUS FILTER POPOVER ───────────── */
+.sf-wrap{position:relative}
+.sf-pop{position:absolute;top:calc(100% + 6px);right:0;background:var(--s1);border:1px solid var(--bdr2);border-radius:var(--r);padding:6px;min-width:168px;z-index:60;box-shadow:0 8px 28px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:3px}
+.sf-opt{display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:var(--rsm);font-size:12px;cursor:pointer;color:var(--t2);transition:all .15s;border:1px solid transparent;user-select:none}
+.sf-opt:hover{background:var(--s2);color:var(--t1)}
+.sf-opt.on{background:var(--amberDim);color:var(--amber);border-color:var(--amberRing)}
+.sf-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);position:absolute;top:4px;right:4px;pointer-events:none}
+
+/* ── DATE PICKER POPOVER ─────────────── */
+.dp-wrap{position:relative}
+.dp-pop{position:absolute;top:calc(100% + 6px);left:0;background:var(--s1);border:1px solid var(--bdr2);border-radius:var(--r);padding:15px;min-width:290px;z-index:60;box-shadow:0 8px 28px rgba(0,0,0,.5)}
+.dp-section-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:8px}
+.dp-quick{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.dp-qbtn{padding:4px 11px;border:1px solid var(--bdr2);border-radius:99px;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--t2);font-family:'Inter',sans-serif;transition:all .15s}
+.dp-qbtn:hover{background:var(--s2);color:var(--t1)}
+.dp-qbtn.on{border-color:var(--amberRing);background:var(--amberDim);color:var(--amber)}
+.dp-divider{border:none;border-top:1px solid var(--bdr);margin:11px 0}
+.dp-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.dp-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.dp-input{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:var(--rsm);padding:7px 9px;font-size:12px;color:var(--t1);font-family:'Inter',sans-serif;color-scheme:dark}
+.dp-input:focus{outline:none;border-color:var(--amber)}
+.dp-actions{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dp-range-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--amber);font-weight:600;padding:3px 9px;background:var(--amberDim);border:1px solid var(--amberRing);border-radius:99px;white-space:nowrap}
+
+/* ── ANIMATIONS ──────────────────────── */
+@keyframes slideIn{from{transform:translateY(-8px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes toastIn{from{transform:translateX(16px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes modalIn{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,.5)}60%{opacity:.7;box-shadow:0 0 0 5px rgba(16,185,129,0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin .8s linear infinite}
+
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ── RESPONSIVE ──────────────────────── */
+@media(max-width:960px){
+  :root{--nav:58px}
+  .navitem span,.navpill,.navlbl,.brand-sub,.brand-name{display:none}
+  .navitem{justify-content:center;padding:10px}
+  .statgrid{grid-template-columns:repeat(2,1fr)}
+  .feedlayout{grid-template-columns:1fr}
+  .chartrow{grid-template-columns:1fr}
+  .holdergrid{grid-template-columns:1fr}
+  .wfgrid{grid-template-columns:1fr}
+  .section-row{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  :root{--nav:0px}
+  .sidebar{display:none}
+  .statgrid{grid-template-columns:1fr 1fr}
+  .txnitem{grid-template-columns:36px 1fr 90px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══ TOP BAR ════════════════════════ -->
+<header class="topbar" role="banner">
+  <div class="brand">
+    <div class="brandmark" aria-hidden="true">CC</div>
+    <div>
+      <div class="brand-name">Chase CC Dashboard</div>
+      <div class="brand-sub">Transaction monitoring center</div>
+    </div>
+  </div>
+  <div class="tbsp"></div>
+  <div class="sysinds" role="status" aria-label="System status indicators">
+    <div class="sysind"><span class="sysdot off" id="dot-n8n" aria-hidden="true"></span>n8n</div>
+    <div class="sysind"><span class="sysdot off" id="dot-slack" aria-hidden="true"></span>Slack</div>
+    <div class="sysind"><span class="sysdot off" id="dot-sheets" aria-hidden="true"></span>Sheets</div>
+    <div class="sysind"><span class="sysdot off" id="dot-qb" aria-hidden="true"></span>QuickBooks</div>
+    <div class="sysind"><span class="sysdot off" id="dot-plaid" aria-hidden="true"></span>Plaid</div>
+  </div>
+  <div class="clock" id="clock" aria-live="off" aria-label="Current time">--:--:-- --</div>
+</header>
+
+<!-- ═══ SIDEBAR ════════════════════════ -->
+<nav class="sidebar" role="navigation" aria-label="Dashboard sections">
+  <div class="navlbl">Main</div>
+  <div class="navitem active" id="nav-overview" onclick="go('overview')" role="button" tabindex="0" aria-current="page">
+    <i class="ti ti-layout-dashboard" aria-hidden="true"></i><span>Overview</span>
+  </div>
+  <div class="navitem" id="nav-feed" onclick="go('feed')" role="button" tabindex="0">
+    <i class="ti ti-activity" aria-hidden="true"></i><span>Live Feed</span>
+    <span class="navpill" id="nav-pending-badge" aria-label="pending transactions" style="display:none">0</span>
+  </div>
+  <div class="navitem" id="nav-sheet" onclick="go('sheet')" role="button" tabindex="0">
+    <i class="ti ti-table" aria-hidden="true"></i><span>Status Sheet</span>
+  </div>
+  <div class="navlbl">Team</div>
+  <div class="navitem" id="nav-cardholders" onclick="go('cardholders')" role="button" tabindex="0">
+    <i class="ti ti-credit-card" aria-hidden="true"></i><span>Cardholders</span>
+  </div>
+  <div class="navitem" id="nav-projects" onclick="go('projects')" role="button" tabindex="0">
+    <i class="ti ti-folder" aria-hidden="true"></i><span>Projects</span>
+  </div>
+  <div class="navlbl">System</div>
+  <div class="navitem" id="nav-workflow" onclick="go('workflow')" role="button" tabindex="0">
+    <i class="ti ti-git-branch" aria-hidden="true"></i><span>Workflow</span>
+  </div>
+  <div class="sidefoot">
+    <div class="navitem" style="cursor:default;opacity:.55" aria-label="n8n self-hosted on Netlify">
+      <i class="ti ti-cloud" aria-hidden="true"></i><span>Netlify + n8n</span>
+      </div>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ════════════════════════════ -->
+<main class="main" id="main" role="main">
+
+<!-- ─── OVERVIEW ──────────────────────── -->
+<div class="page active" id="page-overview" aria-label="Overview dashboard">
+  <div class="phdr">
+    <div>
+      <h1 class="ptitle">Overview</h1>
+      <p class="psub" id="datestr">Loading…</p>
+    </div>
+    <div class="phdr-actions">
+      <span style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t3)">
+        <span class="sysdot off" id="dot-overview" aria-hidden="true"></span> <span id="dot-overview-lbl">Not connected — complete setup to see live data</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="statgrid">
+    <div class="statcard c-white">
+      <div class="statlbl">Total transactions today</div>
+      <div class="statval" id="s-total" aria-live="polite">—</div>
+      <div class="statsub" id="s-cards-sub">—</div>
+    </div>
+    <div class="statcard c-blue">
+      <div class="statlbl">Pending response</div>
+      <div class="statval" style="color:var(--blue)" id="s-pending" aria-live="polite">—</div>
+      <div class="statsub" style="color:var(--t3)">awaiting cardholder reply</div>
+    </div>
+    <div class="statcard c-teal">
+      <div class="statlbl">Completed &amp; filed</div>
+      <div class="statval" style="color:var(--teal)" id="s-complete" aria-live="polite">—</div>
+      <div class="statsub" style="color:var(--t3)">ready for QuickBooks</div>
+    </div>
+    <div class="statcard c-amber">
+      <div class="statlbl">Total spend today</div>
+      <div class="statval" style="color:var(--amber)" id="s-amount" aria-live="polite">—</div>
+      <div class="statsub" style="color:var(--t3)">all cards combined</div>
+    </div>
+  </div>
+
+  <div class="chartrow">
+    <div class="panel">
+      <div class="pnhdr">
+        <div class="pntitle"><i class="ti ti-chart-bar" aria-hidden="true"></i> Spending by project</div>
+        <span style="font-size:11px;color:var(--t3)">Last 7 days</span>
+      </div>
+      <div style="padding:16px;height:224px"><canvas id="chartProject" role="img" aria-label="Bar chart: spending by project last 7 days"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="pnhdr">
+        <div class="pntitle"><i class="ti ti-chart-donut" aria-hidden="true"></i> By cardholder</div>
+      </div>
+      <div style="padding:16px;height:224px;display:flex;align-items:center;justify-content:center">
+        <canvas id="chartCard" role="img" aria-label="Donut chart: spending breakdown by cardholder"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <div class="panel">
+      <div class="pnhdr">
+        <div class="pntitle"><span class="sysdot off" id="dot-recent" aria-hidden="true"></span> Recent transactions</div>
+        <button class="btn btn-sm" onclick="go('feed')" aria-label="View all transactions">View all</button>
+      </div>
+      <div id="ov-recent"></div>
+    </div>
+    <div class="panel">
+      <div class="pnhdr">
+        <div class="pntitle"><i class="ti ti-alert-triangle" aria-hidden="true" style="color:var(--amber)"></i> Needs attention</div>
+      </div>
+      <div id="ov-attention" style="padding:4px 0"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── LIVE FEED ──────────────────────── -->
+<div class="page" id="page-feed" aria-label="Live transaction feed">
+  <div class="phdr">
+    <div>
+      <h1 class="ptitle">Live Transaction Feed</h1>
+      <p class="psub">Real-time credit card purchases — Plaid → n8n → Dashboard</p>
+    </div>
+    <div class="phdr-actions">
+      <span class="badge badge-new" id="new-badge" style="display:none" aria-live="assertive">● NEW</span>
+      <span class="sysdot off" id="dot-feed" aria-hidden="true"></span>
+      <span style="font-size:12px;color:var(--t3)" id="dot-feed-lbl">Not connected</span>
+    </div>
+  </div>
+  <div class="feedlayout">
+    <div class="panel">
+      <div class="pnhdr">
+        <div class="pntitle"><i class="ti ti-list" aria-hidden="true"></i> Transactions</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--t3)" id="txn-count-lbl">— transactions</span>
+          <div class="sf-wrap">
+            <button class="btn btn-sm" id="sf-btn" onclick="toggleStatusFilter()" title="Filter by status" aria-label="Filter by status" style="position:relative;padding:5px 9px">
+              <i class="ti ti-filter" aria-hidden="true"></i>
+              <span id="sf-dot" class="sf-dot" style="display:none"></span>
+            </button>
+            <div class="sf-pop" id="sf-pop" style="display:none" role="listbox" aria-label="Status filter options">
+              <div class="sf-opt on" id="sfo-ALL"      onclick="setSFilter('ALL',this)"      role="option">
+                <i class="ti ti-layout-list" style="font-size:14px;opacity:.6"></i> All statuses
+              </div>
+              <div class="sf-opt" id="sfo-pending"    onclick="setSFilter('pending',this)"   role="option">
+                <span class="badge badge-pending"  style="pointer-events:none">Pending</span>
+              </div>
+              <div class="sf-opt" id="sfo-notified"   onclick="setSFilter('notified',this)"  role="option">
+                <span class="badge badge-notified" style="pointer-events:none">Notified</span>
+              </div>
+              <div class="sf-opt" id="sfo-partial"    onclick="setSFilter('partial',this)"   role="option">
+                <span class="badge badge-partial"  style="pointer-events:none">Partial</span>
+              </div>
+              <div class="sf-opt" id="sfo-complete"   onclick="setSFilter('complete',this)"  role="option">
+                <span class="badge badge-complete" style="pointer-events:none">Complete</span>
+              </div>
+              <div class="sf-opt" id="sfo-pushed"     onclick="setSFilter('pushed',this)"    role="option">
+                <span class="badge badge-pushed"   style="pointer-events:none">Pushed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chips" role="group" aria-label="Filter by cardholder">
+        <button class="chip on" onclick="filt('ALL',this)">All cards</button>
+        <!-- DATA:FILTERCHIPS:START -->
+<!-- DATA:FILTERCHIPS:END -->
+      </div>
+      <div id="txnlist" role="list" aria-label="Transaction list"></div>
+    </div>
+    <div class="panel" id="detailwrap">
+      <div class="pnhdr">
+        <div class="pntitle"><i class="ti ti-receipt-2" aria-hidden="true"></i> Transaction Detail</div>
+      </div>
+      <div id="detail"><div class="dempty"><i class="ti ti-cursor-text" aria-hidden="true"></i><span>Select a transaction<br>to view details</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── STATUS SHEET ──────────────────── -->
+<div class="page" id="page-sheet" aria-label="Accountant status sheet">
+  <div class="phdr">
+    <div>
+      <h1 class="ptitle">Accountant Status Sheet</h1>
+      <p class="psub">Complete filing checklist — purpose, project, receipt and notes per transaction</p>
+    </div>
+    <div class="phdr-actions">
+      <div class="dp-wrap">
+        <button class="btn" id="dp-btn" onclick="toggleDatePicker()" title="Filter by date" aria-label="Filter by date" style="position:relative">
+          <i class="ti ti-calendar" aria-hidden="true"></i>
+          <span id="dp-label">All dates</span>
+          <span id="dp-dot" class="sf-dot" style="display:none"></span>
+        </button>
+        <div class="dp-pop" id="dp-pop" style="display:none" role="dialog" aria-label="Date filter">
+          <div class="dp-section-lbl">Quick Select</div>
+          <div class="dp-quick">
+            <button class="dp-qbtn" onclick="setQuickDate('today',this)">Today</button>
+            <button class="dp-qbtn" onclick="setQuickDate('week',this)">This Week</button>
+            <button class="dp-qbtn" onclick="setQuickDate('month',this)">This Month</button>
+            <button class="dp-qbtn on" id="dp-all-btn" onclick="setQuickDate('all',this)">All Time</button>
+          </div>
+          <div class="dp-divider"></div>
+          <div class="dp-section-lbl">Custom Range</div>
+          <div class="dp-row">
+            <div>
+              <div class="dp-lbl">From</div>
+              <input type="date" class="dp-input" id="dp-from" onchange="onDateInputChange()">
+            </div>
+            <div>
+              <div class="dp-lbl">To</div>
+              <input type="date" class="dp-input" id="dp-to" onchange="onDateInputChange()">
+            </div>
+          </div>
+          <div class="dp-actions">
+            <button class="btn btn-sm btn-danger" onclick="clearDateFilter()" style="font-size:11px">
+              <i class="ti ti-x" aria-hidden="true"></i> Clear
+            </button>
+            <div id="dp-active-badge" style="display:none;flex:1;padding:0 8px">
+              <span class="dp-range-badge" id="dp-range-text"></span>
+            </div>
+            <button class="btn btn-sm btn-amber" onclick="applyDateFilter()">
+              <i class="ti ti-check" aria-hidden="true"></i> Apply
+            </button>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="export-btn" onclick="doExport()"><i class="ti ti-download" aria-hidden="true"></i>Export CSV</button>
+      <button class="btn btn-teal" id="qb-btn" onclick="openQB()"><i class="ti ti-brand-quickbooks" aria-hidden="true"></i>Push to QuickBooks</button>
+    </div>
+  </div>
+  <div class="panel" style="overflow-x:auto">
+    <table class="stbl" aria-label="Transaction status sheet">
+      <thead><tr>
+        <th>Date</th><th>Cardholder</th><th>Merchant</th><th>Amount</th>
+        <th>Purpose</th><th>Project</th>
+        <th style="text-align:center" aria-label="Receipt uploaded">Receipt</th>
+        <th style="text-align:center" aria-label="Notes added">Notes</th>
+        <th>Status</th><th>Progress</th>
+      </tr></thead>
+      <tbody id="sheetbody"></tbody>
+    </table>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid var(--bdr)">
+      <span style="font-size:12px;color:var(--t3)" id="sheetfooter" aria-live="polite">— of — transactions complete</span>
+      <button class="btn btn-teal btn-sm" onclick="openQB()"><i class="ti ti-brand-quickbooks" aria-hidden="true"></i> Sync complete rows</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CARDHOLDERS ────────────────────── -->
+<div class="page" id="page-cardholders" aria-label="Cardholder status">
+  <div class="phdr">
+    <div>
+      <h1 class="ptitle">Cardholders</h1>
+      <p class="psub">Response tracking &amp; spend summary per assigned card</p>
+    </div>
+  </div>
+  <div class="holdergrid" id="holdergrid"></div>
+</div>
+
+<!-- ─── WORKFLOW ──────────────────────── -->
+<div class="page" id="page-workflow" aria-label="Workflow and system status">
+  <div class="phdr">
+    <div>
+      <h1 class="ptitle">Workflow Status</h1>
+      <p class="psub">n8n self-hosted · HF Spaces · Netlify deploy · 6-workflow pipeline</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t3)">
+      <span class="sysdot off" id="dot-workflow" style="flex-shrink:0" aria-hidden="true"></span> <span id="dot-workflow-lbl">Not connected — complete setup to activate</span>
+    </div>
+  </div>
+  <div class="wfgrid">
+    <div class="wfcard">
+      <div class="wftitle"><span class="sysdot off" id="dot-wf1" style="flex-shrink:0" aria-hidden="true"></span> WF1 — Plaid Ingest + HTML Rebuild</div>
+      <div class="wfrow"><span class="wflbl">Status</span><span style="color:var(--t3)">Inactive — not yet configured</span></div>
+      <div class="wfrow"><span class="wflbl">Source</span><span style="color:var(--t3)">Plaid API (sandbox → production)</span></div>
+      <div class="wfrow"><span class="wflbl">Poll interval</span><span style="color:var(--t3)">Every 5 minutes</span></div>
+      <div class="wfrow"><span class="wflbl">Last triggered</span><span style="color:var(--t3)">Never</span></div>
+      <div class="wfrow"><span class="wflbl">Executions today</span><span id="wf1exec" style="color:var(--t3)">0</span></div>
+      <div class="wfrow"><span class="wflbl">Errors (24h)</span><span style="color:var(--t3)">—</span></div>
+    </div>
+    <div class="wfcard">
+      <div class="wftitle"><span class="sysdot off" id="dot-wf2" style="flex-shrink:0" aria-hidden="true"></span> WF2 — Slack Notifier</div>
+      <div class="wfrow"><span class="wflbl">Status</span><span style="color:var(--t3)">Inactive — not yet configured</span></div>
+      <div class="wfrow"><span class="wflbl">Messages sent today</span><span id="wf2sent" style="color:var(--t3)">0</span></div>
+      <div class="wfrow"><span class="wflbl">Delivery rate</span><span style="color:var(--t3)">—</span></div>
+      <div class="wfrow"><span class="wflbl">Block Kit template</span><span style="color:var(--t3)">Not configured</span></div>
+      <div class="wfrow"><span class="wflbl">Card routing table</span><span id="wf2cards" style="color:var(--t3)">0 cards mapped</span></div>
+      <div class="wfrow"><span class="wflbl">Errors (24h)</span><span style="color:var(--t3)">—</span></div>
+    </div>
+    <div class="wfcard">
+      <div class="wftitle"><span class="sysdot off" id="dot-wf3" style="flex-shrink:0" aria-hidden="true"></span> WF3 — Slack Response Collector</div>
+      <div class="wfrow"><span class="wflbl">Interactivity webhook</span><span style="color:var(--t3)">Not configured</span></div>
+      <div class="wfrow"><span class="wflbl">Responses received</span><span id="wf3resp" style="color:var(--t3)">0 today</span></div>
+      <div class="wfrow"><span class="wflbl">Avg response time</span><span style="color:var(--t3)">—</span></div>
+      <div class="wfrow"><span class="wflbl">Sheets updates</span><span id="wf3updates" style="color:var(--t3)">0 today</span></div>
+      <div class="wfrow"><span class="wflbl">Signature validation</span><span style="color:var(--t3)">—</span></div>
+      <div class="wfrow"><span class="wflbl">Errors (24h)</span><span style="color:var(--t3)">—</span></div>
+    </div>
+    <div class="wfcard">
+      <div class="wftitle"><span class="sysdot off" id="dot-wf4" style="flex-shrink:0" aria-hidden="true"></span> WF4 — Weekly Summary</div>
+      <div class="wfrow"><span class="wflbl">Status</span><span style="color:var(--t3)">Inactive — not yet configured</span></div>
+      <div class="wfrow"><span class="wflbl">Schedule</span><span style="color:var(--t3)">Every Friday 9:00 AM</span></div>
+      <div class="wfrow"><span class="wflbl">Last run</span><span style="color:var(--t3)">Never</span></div>
+      <div class="wfrow"><span class="wflbl">Recipients</span><span style="color:var(--t3)">Accountant only</span></div>
+      <div class="wfrow"><span class="wflbl">Emails sent</span><span style="color:var(--t3)">0 this week</span></div>
+      <div class="wfrow"><span class="wflbl">Errors (24h)</span><span style="color:var(--t3)">—</span></div>
+    </div>
+    <div class="wfcard">
+      <div class="wftitle"><span class="sysdot off" id="dot-wf5" style="flex-shrink:0" aria-hidden="true"></span> WF5 — QuickBooks Push</div>
+      <div class="wfrow"><span class="wflbl">OAuth token</span><span style="color:var(--t3)">Not connected</span></div>
+      <div class="wfrow"><span class="wflbl">Last sync</span><span style="color:var(--t3)">Never</span></div>
+      <div class="wfrow"><span class="wflbl">Total records synced</span><span style="color:var(--t3)">0</span></div>
+      <div class="wfrow"><span class="wflbl">Ready to sync now</span><span style="color:var(--t3)" id="qb-ready">0 transactions</span></div>
+      <div class="wfrow"><span class="wflbl">Trigger</span><span style="color:var(--t3)">Dashboard button → n8n webhook</span></div>
+      <div class="wfrow"><span class="wflbl">Errors (24h)</span><span style="color:var(--t3)">—</span></div>
+    </div>
+    <div class="wfcard">
+      <div class="wftitle"><span class="sysdot off" id="dot-wf6" style="flex-shrink:0" aria-hidden="true"></span> WF6 — Project Management</div>
+      <div class="wfrow"><span class="wflbl">Status</span><span style="color:var(--t3)">Inactive — not yet configured</span></div>
+      <div class="wfrow"><span class="wflbl">Webhook</span><span style="color:var(--t3)">Not configured</span></div>
+      <div class="wfrow"><span class="wflbl">Projects active</span><span id="wf6projects" style="color:var(--t3)">0 active</span></div>
+      <div class="wfrow"><span class="wflbl">Last sync</span><span style="color:var(--t3)">Never</span></div>
+      <div class="wfrow"><span class="wflbl">Trigger</span><span style="color:var(--t3)">Dashboard → Sheets → n8n</span></div>
+      <div class="wfrow"><span class="wflbl">Errors (24h)</span><span style="color:var(--t3)">—</span></div>
+    </div>
+    <div class="wfcard" style="grid-column:span 2">
+      <div class="wftitle"><i class="ti ti-shield" style="color:var(--t3)" aria-hidden="true"></i> Security Configuration — Target Architecture (not yet active)</div>
+      <div class="secgrid">
+        <div><div class="secitem-lbl">n8n auth</div><div class="secitem-val" style="color:var(--t3)">MFA + IP restrict</div></div>
+        <div><div class="secitem-lbl">Nginx proxy</div><div class="secitem-val" style="color:var(--t3)">443 only · A+ TLS</div></div>
+        <div><div class="secitem-lbl">Slack signature</div><div class="secitem-val" style="color:var(--t3)">HMAC-SHA256</div></div>
+        <div><div class="secitem-lbl">Plaid signature</div><div class="secitem-val" style="color:var(--t3)">JWT verification</div></div>
+        <div><div class="secitem-lbl">Credential store</div><div class="secitem-val" style="color:var(--t3)">AES-256 encrypted</div></div>
+        <div><div class="secitem-lbl">QB OAuth2</div><div class="secitem-val" style="color:var(--t3)">Auto-refresh</div></div>
+        <div><div class="secitem-lbl">Netlify deploy</div><div class="secitem-val" style="color:var(--t3)">Env var injection</div></div>
+        <div><div class="secitem-lbl">Webhook secret</div><div class="secitem-val" style="color:var(--t3)">Never in git</div></div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--t3);display:flex;align-items:center;gap:6px">
+        <i class="ti ti-info-circle" aria-hidden="true"></i>
+        These indicators turn green once each service is connected and verified. See <strong style="color:var(--t2)">SETUP_CHECKLIST.md</strong> to begin.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PROJECTS ──────────────────────── -->
+<div class="page" id="page-projects" aria-label="Project list">
+  <div class="phdr">
+    <div>
+      <h1 class="ptitle">Projects</h1>
+      <p class="psub">Manage the project list that cardholders select from in Slack when filing transactions</p>
+    </div>
+    <div class="phdr-actions">
+      <button class="btn" id="proj-sheets-btn" onclick="openProjectsSheet()">
+        <i class="ti ti-table" aria-hidden="true"></i> Open in Sheets
+      </button>
+      <button class="btn btn-amber" onclick="toggleAddForm()">
+        <i class="ti ti-plus" aria-hidden="true"></i> Add Project
+      </button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <!-- Add project inline form -->
+    <div class="proj-add-form" id="proj-add-form">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--t1)">New Project</div>
+      <div class="proj-hint">Enter the project name and an optional short code. The name will appear exactly as typed in the Slack modal dropdown for cardholders.</div>
+      <div class="proj-inputs">
+        <div>
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Project Name <span style="color:var(--red)">*</span></div>
+          <input class="proj-input" id="proj-name-input" placeholder="e.g. 1202 North St Renovation" maxlength="80"
+            onkeydown="if(event.key==='Enter')submitAddProject()">
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Short Code</div>
+          <input class="proj-input" id="proj-code-input" placeholder="e.g. NST" maxlength="8"
+            style="text-transform:uppercase"
+            oninput="this.value=this.value.toUpperCase()"
+            onkeydown="if(event.key==='Enter')submitAddProject()">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" onclick="toggleAddForm()">Cancel</button>
+        <button class="btn btn-amber" onclick="submitAddProject()">
+          <i class="ti ti-check" aria-hidden="true"></i> Add &amp; Sync
+        </button>
+      </div>
+    </div>
+
+    <!-- Toolbar: count + sync status -->
+    <div class="proj-toolbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;font-weight:600" id="proj-count">— projects</span>
+        <span class="badge badge-new" id="proj-unsaved" style="display:none">Unsaved</span>
+      </div>
+      <div class="proj-sync" id="proj-sync-status">
+        <span class="sysdot off" id="proj-sync-dot" aria-hidden="true"></span>
+        <span id="proj-sync-lbl">Not synced yet — connect n8n to enable sync</span>
+      </div>
+    </div>
+
+    <!-- Project cards grid -->
+    <div class="proj-grid" id="proj-grid"></div>
+
+    <!-- Confirm remove overlay (inline) -->
+    <div id="proj-confirm" style="display:none;margin:0 16px 16px;background:var(--redDim);border:1px solid rgba(248,113,113,.3);border-radius:var(--rsm);padding:14px 16px">
+      <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px">Remove project?</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:12px">
+        "<span id="proj-confirm-name" style="font-weight:600"></span>" will be removed from the Slack dropdown.
+        Existing transactions with this project are not affected.
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="cancelRemove()">Cancel</button>
+        <button class="btn btn-sm btn-danger" onclick="confirmRemove()" style="border-color:var(--red)">
+          <i class="ti ti-trash" aria-hidden="true"></i> Remove &amp; Sync
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sheet sync note -->
+  <div class="proj-sheet-note" style="margin-top:12px">
+    <i class="ti ti-info-circle" style="font-size:18px;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>
+    <div>
+      <strong style="color:var(--t2)">Bidirectional sync with Google Sheets.</strong>
+      Changes made here are posted to n8n WF-6, which updates the <em>Projects</em> sheet and triggers an HTML rebuild.
+      Changes made directly in the Google Sheet are picked up on the next WF-1 sync cycle (every 5 min) and reflected here automatically.
+      The Slack modal for cardholders always reads the current list from this dashboard.
+    </div>
+  </div>
+</div>
+
+</main><!-- end main -->
+</div><!-- end shell -->
+
+<!-- ═══ QB MODAL ════════════════════════ -->
+<div class="overlay" id="qboverlay" role="dialog" aria-modal="true" aria-labelledby="qb-modal-title" onclick="if(event.target===this)closeQB()">
+  <div class="modal">
+    <div class="modal-title" id="qb-modal-title"><i class="ti ti-brand-quickbooks" style="color:#2CA01C;margin-right:6px" aria-hidden="true"></i>Push to QuickBooks</div>
+    <div class="modal-sub">The following completed transactions will be created as Expense entries in QuickBooks Online, mapped to their respective projects as Classes.</div>
+    <div class="modal-list" id="qb-list" aria-label="Transactions to sync"></div>
+    <div class="modal-warn"><strong>Before pushing:</strong> Verify all receipts are attached in Google Drive. Once synced, these appear as Expenses under the mapped Project/Class in QBO. This action cannot be auto-reversed.</div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeQB()">Cancel</button>
+      <button class="btn btn-teal" id="qb-confirm" onclick="doQBPush()"><i class="ti ti-send" aria-hidden="true"></i> Confirm &amp; Push</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST CONTAINER ════════════════ -->
+<div class="toasts" id="toasts" aria-live="polite" aria-label="Notifications"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA — injected automatically by n8n WF-1 on every Plaid sync + Netlify deploy.
+// DO NOT edit between DATA markers manually.
+// Source of truth: Google Sheets "Chase CC Dashboard — Master"
+//
+// H field names (must match WF-1 Code: Build HTML Data Payload output):
+//   init (initials), col (color), bg, name, role
+//
+// TX field names (must match WF-1 Code: Build HTML Data Payload output):
+//   id, c (card_last4), dt (date), tm (time), m (merchant),
+//   a (amount), st (status), pu (purpose), pr (project),
+//   rc (receipt bool), rc_url (receipt URL), no (notes), sl (slack thread)
+//
+// See SETUP_CHECKLIST.md Step 12 for required WF-1 Code node changes.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Cardholder map  card_last4 → { name, init, col, bg, role } ─────────────
+// DATA:CARDHOLDERS:START
+const H = {};
+// DATA:CARDHOLDERS:END
+
+// ── System status (injected by WF-1; determines live indicator states) ───────
+// DATA:SYS_STATUS:START
+let SYS_STATUS = {n8n:'off',plaid:'off',sheets:'off',slack:'off',qb:'off',txnCount:0,cardCount:0,syncTs:''};
+// DATA:SYS_STATUS:END
+
+// ── Transaction array (last 60 days, newest first) ──────────────────────────
+// DATA:TRANSACTIONS:START
+let TX = [];
+// DATA:TRANSACTIONS:END
+
+// ── Project list (synced from Google Sheets "Projects" tab) ─────────────────
+// Each project: { name, code, active, created_at }
+// DATA:PROJECTS:START
+let PROJECTS = [];
+// DATA:PROJECTS:END
+
+// ── Last sync timestamp (injected by WF-1; used for auto-refresh polling) ───
+// DATA:SYNC_TS:START
+const SYNC_TS = '';
+// DATA:SYNC_TS:END
+
+// ── Runtime config injected at Netlify build time by inject_secrets.js ───────
+// QB_PUSH_URL          — QB push webhook URL + secret (never stored in git)
+// SHEETS_URL           — Google Sheets master URL for "Open in Sheets"
+// PROJECTS_WEBHOOK_URL — n8n WF-6 webhook URL for add/remove project actions
+// PROJECTS_SHEET_URL   — Direct link to the Projects tab in Google Sheets
+// DATA:WEBHOOK:START
+const QB_PUSH_URL             = '%%QB_PUSH_URL%%';
+const QB_PUSH_SECRET          = '%%QB_PUSH_SECRET%%';
+const SHEETS_URL              = '%%SHEETS_URL%%';
+const PROJECTS_WEBHOOK_URL    = '%%PROJECTS_WEBHOOK_URL%%';
+const PROJECTS_WEBHOOK_SECRET = '%%PROJECTS_WEBHOOK_SECRET%%';
+const PROJECTS_SHEET_URL      = '%%PROJECTS_SHEET_URL%%';
+const N8N_STATUS_URL          = '%%N8N_STATUS_URL%%';
+// DATA:WEBHOOK:END
+
+let selId=null, cfilt='ALL', sFilter='ALL';
+let dateFrom='', dateTo='', activeDateQuick='all';
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+// Safe cardholder lookup — never crashes if card missing from H
+const ch  = card => H[card] || {name:'Unknown',init:'??',col:'#8B9CB8',bg:'#18202E',role:'Cardholder'};
+const fmt = n => '$'+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const comp= t => [t.pu, t.pr, (t.rc||t.rc_url), t.no].filter(Boolean).length;
+const av  = (card,sz=36) => {
+  const h=ch(card);
+  return `<div class="av" style="width:${sz}px;height:${sz}px;background:${h.bg};color:${h.col};font-size:${Math.round(sz*.31)}px" aria-hidden="true">${h.init}</div>`;
+};
+const badge = s => {
+  const map={complete:['badge-complete','Complete'],pushed:['badge-pushed','Pushed'],
+             partial:['badge-partial','Partial'],notified:['badge-notified','Notified'],
+             pending:['badge-pending','Pending']};
+  const [cls,lbl]=map[s]||['badge-pending',s||'Pending'];
+  return `<span class="badge ${cls}">${lbl}</span>`;
+};
+const ci = v => v
+  ? '<i class="ti ti-circle-check" style="color:var(--teal);font-size:16px" aria-label="Yes"></i>'
+  : '<i class="ti ti-circle" style="color:var(--t3);font-size:16px" aria-label="No"></i>';
+const pcolor = p => p===100?'var(--teal)':p>=50?'var(--amber)':'var(--blue)';
+
+// ─── STATS ─────────────────────────────────────────────────────────────────
+function updStats(){
+  const tot  = TX.reduce((a,t)=>a+parseFloat(t.a||0),0);
+  const pend = TX.filter(t=>t.st==='pending'||t.st==='notified').length;
+  const done = TX.filter(t=>t.st==='complete'||t.st==='pushed').length;
+  const cards= Object.keys(H).length;
+  document.getElementById('s-total').textContent   = TX.length||'—';
+  document.getElementById('s-pending').textContent  = pend||'—';
+  document.getElementById('s-complete').textContent = done||'—';
+  document.getElementById('s-amount').textContent   = TX.length?'$'+Math.round(tot).toLocaleString():'—';
+  const sub=document.getElementById('s-cards-sub');
+  if(sub) sub.textContent=cards?`across ${cards} card${cards!==1?'s':''}`:TX.length?'syncing…':'—';
+  const pb=document.getElementById('nav-pending-badge');
+  if(pb){pb.textContent=pend;pb.style.display=pend?'':'none';}
+  const sf=document.getElementById('sheetfooter');
+  if(sf) sf.textContent=`${done} of ${TX.length} transactions complete and ready to sync`;
+  const qr=document.getElementById('qb-ready');
+  if(qr) qr.textContent=`${TX.filter(t=>t.st==='complete').length} transaction${done!==1?'s':''}`;
+  const wf1=document.getElementById('wf1exec'); if(wf1) wf1.textContent=TX.length;
+  const wf2=document.getElementById('wf2sent'); if(wf2) wf2.textContent=TX.length+' today';
+  const wf2c=document.getElementById('wf2cards');if(wf2c)wf2c.textContent=cards+' cards mapped';
+  const wf3r=document.getElementById('wf3resp'); if(wf3r)wf3r.textContent=done+' today';
+  const wf3u=document.getElementById('wf3updates');if(wf3u)wf3u.textContent=done+' today';
+}
+
+// ─── NAV ────────────────────────────────────────────────────────────────────
+function go(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.navitem').forEach(n=>{n.classList.remove('active');n.removeAttribute('aria-current');});
+  document.getElementById('page-'+page).classList.add('active');
+  const ni=document.getElementById('nav-'+page);if(ni){ni.classList.add('active');ni.setAttribute('aria-current','page');}
+  document.getElementById('main').scrollTop=0;
+  if(page==='sheet')buildSheet();
+  if(page==='cardholders')buildHolders();
+  if(page==='overview'){buildRecent();buildAttention();}
+  if(page==='projects')buildProjects();
+}
+document.querySelectorAll('.navitem').forEach(n=>n.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();n.click();}}));
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();c.click();}}));
+
+// ─── PROJECTS ────────────────────────────────────────────────────────────────
+let _pendingRemoveName = null;
+
+function buildProjects(){
+  const grid  = document.getElementById('proj-grid');
+  const count = document.getElementById('proj-count');
+  if(!grid) return;
+
+  const active = PROJECTS.filter(p => p.active !== false);
+  if(count) count.textContent = `${active.length} project${active.length!==1?'s':''}`;
+
+  if(!active.length){
+    grid.innerHTML=`
+      <div class="dempty" style="grid-column:1/-1;padding:50px 20px">
+        <i class="ti ti-folder-off" aria-hidden="true"></i>
+        <span>No projects yet.<br>Add one above or edit the Projects sheet directly.</span>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = active.map(p => `
+    <div class="projcard" id="projcard-${CSS.escape(p.name)}">
+      ${p.code ? `<div class="projcode">${p.code}</div>` : ''}
+      <div style="flex:1;min-width:0">
+        <div class="projname">${p.name}</div>
+        <div class="projdate">${p.created_at ? 'Added '+p.created_at : 'Added manually'}</div>
+      </div>
+      <button class="proj-remove" onclick="askRemove('${p.name.replace(/'/g,"\\'")}','${(p.code||'').replace(/'/g,"\\'")}')"
+        aria-label="Remove ${p.name}" title="Remove project">
+        <i class="ti ti-trash" aria-hidden="true"></i>
+      </button>
+    </div>`).join('');
+}
+
+function toggleAddForm(){
+  const form = document.getElementById('proj-add-form');
+  const isOpen = form.classList.toggle('open');
+  if(isOpen){
+    setTimeout(()=>document.getElementById('proj-name-input').focus(), 50);
+    // Hide confirm panel if open
+    document.getElementById('proj-confirm').style.display='none';
+    _pendingRemoveName = null;
+  } else {
+    document.getElementById('proj-name-input').value='';
+    document.getElementById('proj-code-input').value='';
+  }
+}
+
+function submitAddProject(){
+  const nameEl = document.getElementById('proj-name-input');
+  const codeEl = document.getElementById('proj-code-input');
+  const name   = nameEl.value.trim();
+  const code   = codeEl.value.trim().toUpperCase();
+
+  if(!name){ nameEl.focus(); toast('Required','Project name cannot be empty','info'); return; }
+  if(PROJECTS.some(p=>p.name.toLowerCase()===name.toLowerCase())){
+    nameEl.focus();
+    toast('Duplicate','A project with that name already exists','info');
+    return;
+  }
+
+  const newProject = { name, code, active: true, created_at: new Date().toISOString().slice(0,10) };
+
+  // Optimistic local update
+  PROJECTS.push(newProject);
+  buildProjects();
+  toggleAddForm();
+  setSyncStatus('syncing');
+  toast('Project added',`"${name}" added locally — syncing to Google Sheets…`,'success');
+
+  // POST to n8n WF-6
+  _syncProjectAction('add', newProject);
+}
+
+function askRemove(name, code){
+  _pendingRemoveName = name;
+  document.getElementById('proj-confirm-name').textContent = name;
+  const panel = document.getElementById('proj-confirm');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  // Close add form if open
+  document.getElementById('proj-add-form').classList.remove('open');
+}
+
+function cancelRemove(){
+  _pendingRemoveName = null;
+  document.getElementById('proj-confirm').style.display = 'none';
+}
+
+function confirmRemove(){
+  if(!_pendingRemoveName) return;
+  const name = _pendingRemoveName;
+  cancelRemove();
+
+  // Optimistic local update — mark inactive + animate out
+  const proj = PROJECTS.find(p=>p.name===name);
+  if(proj) proj.active = false;
+
+  const card = document.getElementById('projcard-'+CSS.escape(name));
+  if(card){
+    card.classList.add('removing');
+    setTimeout(()=>buildProjects(), 320);
+  } else {
+    buildProjects();
+  }
+
+  setSyncStatus('syncing');
+  toast('Project removed',`"${name}" removed — syncing to Google Sheets…`,'success');
+
+  // POST to n8n WF-6
+  _syncProjectAction('remove', { name });
+}
+
+async function _syncProjectAction(action, project){
+  if(!PROJECTS_WEBHOOK_URL || PROJECTS_WEBHOOK_URL==='%%PROJECTS_WEBHOOK_URL%%'){
+    setSyncStatus('disconnected');
+    showUnsavedBadge(true);
+    toast('Not connected','PROJECTS_WEBHOOK_URL not set — change saved locally only. Set up n8n WF-6 to enable full sync.','info');
+    return;
+  }
+  try{
+    const res = await fetch(PROJECTS_WEBHOOK_URL, {
+      method:  'POST',
+      headers: {'Content-Type':'application/json','X-Webhook-Secret':PROJECTS_WEBHOOK_SECRET},
+      body:    JSON.stringify({ action, project, ts: Date.now() })
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    setSyncStatus('synced');
+    showUnsavedBadge(false);
+    toast('Synced',`Project "${project.name}" ${action==='add'?'added to':'removed from'} Google Sheets. Dashboard will rebuild shortly.`,'success');
+  } catch(err){
+    setSyncStatus('error');
+    showUnsavedBadge(true);
+    toast('Sync failed',err.message+' — change saved locally, will retry on next load','info');
+    console.error('[Projects sync]', err);
+  }
+}
+
+function setSyncStatus(state){
+  const dot = document.getElementById('proj-sync-dot');
+  const lbl = document.getElementById('proj-sync-lbl');
+  if(!dot||!lbl) return;
+  const map = {
+    disconnected: { cls:'off',     text:'Not connected — complete setup to enable sync' },
+    syncing:      { cls:'warn',    text:'Syncing to Google Sheets…' },
+    synced:       { cls:'on',      text:'Synced · '+new Date().toLocaleTimeString() },
+    error:        { cls:'off',     text:'Sync error — check n8n WF-6 logs' }
+  };
+  const s = map[state] || map.disconnected;
+  dot.className = `sysdot ${s.cls}`;
+  lbl.textContent = s.text;
+}
+
+function showUnsavedBadge(show){
+  const b = document.getElementById('proj-unsaved');
+  if(b) b.style.display = show ? '' : 'none';
+}
+
+function openProjectsSheet(){
+  if(PROJECTS_SHEET_URL && PROJECTS_SHEET_URL!=='%%PROJECTS_SHEET_URL%%'){
+    window.open(PROJECTS_SHEET_URL, '_blank');
+  } else {
+    toast('Not configured','PROJECTS_SHEET_URL not set in Netlify env vars','info');
+  }
+}
+
+// ─── CLOCK ─────────────────────────────────────────────────────────────────
+function tick(){
+  const d=new Date(),h=d.getHours(),m=d.getMinutes(),s=d.getSeconds(),ap=h>=12?'PM':'AM',hr=h%12||12;
+  document.getElementById('clock').textContent=`${String(hr).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${ap}`;
+  document.getElementById('datestr').textContent=d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+
+// ─── TRANSACTION LIST ────────────────────────────────────────────────────────
+function buildList(){
+  const el=document.getElementById('txnlist');
+  const rows=TX
+    .filter(t=>cfilt==='ALL'||t.c===cfilt)
+    .filter(t=>sFilter==='ALL'||t.st===sFilter);
+  const cl=document.getElementById('txn-count-lbl');
+  if(cl){
+    const filterDesc=sFilter!=='ALL'?` · ${sFilter}`:'';
+    cl.textContent=`${rows.length} transaction${rows.length!==1?'s':''}${filterDesc}`;
+  }
+  if(!rows.length){
+    const msg=TX.length
+      ? (sFilter!=='ALL'?`No ${sFilter} transactions`:'No transactions for this card')
+      : 'Waiting for live data from Plaid…';
+    el.innerHTML=`<div class="dempty"><i class="ti ti-inbox" aria-hidden="true"></i><span>${msg}</span></div>`;
+    return;
+  }
+  el.innerHTML=rows.map(t=>`
+    <div class="txnitem${selId===t.id?' sel':''}" onclick="sel('${t.id}')" role="listitem button" tabindex="0" aria-selected="${selId===t.id}">
+      ${av(t.c,36)}
+      <div>
+        <div class="merchant">${t.m}</div>
+        <div class="txnmeta">••••${t.c} · ${ch(t.c).name} · ${t.tm||''}</div>
+      </div>
+      <div><div class="amount">${fmt(t.a)}</div><div class="txndate">${t.dt}</div></div>
+      <div>${badge(t.st)}</div>
+    </div>`).join('');
+  el.querySelectorAll('.txnitem').forEach(r=>r.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();r.click();}}));
+}
+
+// ─── DETAIL ─────────────────────────────────────────────────────────────────
+function sel(id){selId=id;buildList();buildDetail();}
+function buildDetail(){
+  const de=document.getElementById('detail');
+  if(!selId){de.innerHTML='<div class="dempty"><i class="ti ti-cursor-text"></i><span>Select a transaction</span></div>';return;}
+  const t=TX.find(x=>x.id===selId);
+  if(!t){de.innerHTML='';return;}
+  const h=ch(t.c), c=comp(t), p=Math.round(c/4*100);
+  // Receipt: support bool rc AND string rc_url (live data from n8n)
+  const hasRc = !!(t.rc||t.rc_url);
+  const rcVal = t.rc_url
+    ? `<a href="${t.rc_url}" target="_blank" rel="noopener" style="color:var(--teal)">View receipt ↗</a>`
+    : (hasRc ? 'Uploaded ✓' : '');
+  const isPushed = t.st==='pushed';
+  de.innerHTML=`
+  <div class="dsec">
+    <div style="display:flex;align-items:center;gap:12px">
+      ${av(t.c,44)}
+      <div style="flex:1"><div style="font-size:15px;font-weight:700">${h.name}</div><div style="font-size:11px;color:var(--t3)">${h.role} · Card ••••${t.c} · ${t.id}</div></div>
+      ${badge(t.st)}
+    </div>
+  </div>
+  <div class="dsec">
+    <div class="dlbl">Transaction details</div>
+    <div class="dgrid2">
+      <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px">Merchant</div><div style="font-weight:600;font-size:13px">${t.m}</div></div>
+      <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px">Amount</div><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--amber)">${fmt(t.a)}</div></div>
+      <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px">Date &amp; Time</div><div style="font-size:12px">${t.dt}${t.tm?' · '+t.tm:''}</div></div>
+      <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px">Filing progress</div><div style="font-size:12px;font-weight:600">${c}/4 fields</div><div class="prog"><div class="progfill" style="width:${p}%;background:${pcolor(p)}"></div></div></div>
+    </div>
+  </div>
+  <div class="dsec">
+    <div class="dlbl">Cardholder responses</div>
+    <div style="background:var(--s2);border-radius:8px;padding:2px 12px">
+      ${[['Purpose',t.pu],['Project',t.pr],['Receipt',rcVal],['Notes',t.no]].map(([n,v])=>`
+      <div class="dfield">
+        <span class="dfname">${n}</span>
+        <span class="dfval" style="color:${v?'var(--t1)':'var(--t3)'}">${v||'Awaiting via Slack…'}</span>
+        ${ci(v)}
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="dsec">
+    <div class="dlbl">Slack thread</div>
+    <div class="slackthread">
+      ${(t.sl&&t.sl.length)
+        ? t.sl.map(m=>`
+          <div class="slackmsg">
+            <div class="av" style="width:26px;height:26px;flex-shrink:0;background:${m.f==='b'?'#1B3A5C':h.bg};color:${m.f==='b'?'#93C5FD':h.col};font-size:10px;font-weight:700" aria-hidden="true">${m.f==='b'?'⚡':h.init}</div>
+            <div class="slackbubble">${m.t||m.msg||''}</div>
+          </div>`).join('')
+        : '<div style="font-size:11px;color:var(--t3);text-align:center;padding:6px;font-style:italic">Slack thread tracked in n8n — cardholder replies update the sheet automatically.</div>'}
+      ${(t.st==='pending'||t.st==='notified')?'<div style="font-size:11px;color:var(--t3);text-align:center;padding:4px 0;font-style:italic">Awaiting reply from cardholder…</div>':''}
+    </div>
+  </div>
+  <div class="dsec" style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-sm" onclick="resend('${t.id}')"><i class="ti ti-brand-slack" aria-hidden="true"></i> Resend to Slack</button>
+    ${!isPushed?`<button class="btn btn-sm" style="color:var(--teal);border-color:rgba(16,185,129,.3)" onclick="markDone('${t.id}')"><i class="ti ti-check" aria-hidden="true"></i> Mark complete</button>`:''}
+    ${isPushed?`<span style="font-size:12px;color:var(--t3);display:flex;align-items:center;gap:5px"><i class="ti ti-brand-quickbooks" style="color:var(--teal)"></i> Pushed to QuickBooks</span>`:''}
+  </div>`;
+}
+function resend(id){const t=TX.find(x=>x.id===id);toast('Slack','Reminder sent to '+ch(t.c).name+' via n8n → Slack','info');}
+function markDone(id){
+  const t=TX.find(x=>x.id===id);
+  if(t&&t.st!=='pushed'){
+    t.st='complete';
+    updStats();buildList();buildDetail();buildSheet();buildRecent();buildAttention();
+    toast('Filed',t.m+' marked as complete','success');
+  }
+}
+
+// ─── FILTER ─────────────────────────────────────────────────────────────────
+function filt(card,btn){
+  cfilt=card;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  buildList();
+}
+
+// ─── STATUS SHEET ────────────────────────────────────────────────────────────
+// txnInDateRange — shared helper used by buildSheet, openQB, doQBPush
+function txnInDateRange(t){
+  if(!dateFrom && !dateTo) return true;
+  const d = t.dt || '';
+  if(dateFrom && d < dateFrom) return false;
+  if(dateTo   && d > dateTo)   return false;
+  return true;
+}
+
+function buildSheet(){
+  const tb=document.getElementById('sheetbody');if(!tb)return;
+  const rows=TX.filter(txnInDateRange);
+  const done=rows.filter(t=>t.st==='complete'||t.st==='pushed').length;
+
+  tb.innerHTML=rows.length ? rows.map(t=>{
+    const h=ch(t.c), c=comp(t), p=Math.round(c/4*100);
+    const hasRc=!!(t.rc||t.rc_url);
+    const rcCell=t.rc_url
+      ? `<a href="${t.rc_url}" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none">View ↗</a>`
+      : ci(hasRc);
+    const rb=t.st==='pushed'?'rgba(16,185,129,.03)':t.st==='complete'?'rgba(16,185,129,.05)':t.st==='partial'?'rgba(245,158,11,.04)':'';
+    return `<tr style="${rb?'background:'+rb:''}">
+      <td class="mono" style="font-size:11px;white-space:nowrap">${t.dt}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">${av(t.c,24)}<span>${h.name}</span></div></td>
+      <td style="max-width:130px;font-size:12px">${t.m}</td>
+      <td class="mono" style="text-align:right;font-weight:700">${fmt(t.a)}</td>
+      <td style="color:${t.pu?'var(--t1)':'var(--t3)'};">${t.pu||'—'}</td>
+      <td style="color:${t.pr?'var(--t1)':'var(--t3)'};">${t.pr||'—'}</td>
+      <td style="text-align:center">${rcCell}</td>
+      <td style="text-align:center">${ci(t.no)}</td>
+      <td>${badge(t.st)}</td>
+      <td style="min-width:90px">
+        <div style="font-size:10px;color:var(--t3);margin-bottom:3px">${c}/4</div>
+        <div class="prog"><div class="progfill" style="width:${p}%;background:${pcolor(p)}"></div></div>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="10" style="text-align:center;padding:28px;color:var(--t3);font-size:12px">No transactions for the selected date range</td></tr>`;
+
+  // Footer — show date range context when active
+  const sf=document.getElementById('sheetfooter');
+  if(sf){
+    const rangeText=(dateFrom||dateTo)
+      ? ` · ${dateFrom&&dateTo&&dateFrom===dateTo?dateFrom:(dateFrom||'…')+' → '+(dateTo||'…')}`
+      : '';
+    sf.textContent=`${done} of ${rows.length} transactions complete${rangeText}`;
+  }
+}
+
+// ─── QB MODAL ────────────────────────────────────────────────────────────────
+function openQB(){
+  const eligible=TX.filter(t=>t.st==='complete'&&txnInDateRange(t));
+  const hasRange=dateFrom||dateTo;
+  const rangeLabel=hasRange
+    ? (dateFrom===dateTo?dateFrom:(dateFrom||'…')+' → '+(dateTo||'…'))
+    : '';
+
+  document.getElementById('qb-list').innerHTML=eligible.length
+    ? eligible.map(t=>`
+      <div class="modal-listrow">
+        <div style="display:flex;align-items:center;gap:10px">${av(t.c,28)}<span style="font-weight:500">${t.m}</span></div>
+        <div style="text-align:right">
+          <div style="font-family:'JetBrains Mono',monospace;font-weight:700">${fmt(t.a)}</div>
+          <div style="font-size:11px;color:var(--t3)">${t.dt}${t.pr?' · '+t.pr:''}</div>
+        </div>
+      </div>`).join('')
+    : `<div style="padding:16px;text-align:center;color:var(--t3);font-size:13px">No complete transactions${hasRange?' for the selected dates':''}</div>`;
+
+  // Update modal sub-text to show date context
+  const sub=document.querySelector('#qboverlay .modal-sub');
+  if(sub){
+    sub.textContent=hasRange
+      ? `Pushing ${eligible.length} complete transaction${eligible.length!==1?'s':''} for ${rangeLabel}.`
+      : `Pushing all ${eligible.length} complete, unsynced transaction${eligible.length!==1?'s':''}.`;
+  }
+
+  document.getElementById('qboverlay').classList.add('open');
+  document.getElementById('qb-confirm').focus();
+}
+function closeQB(){document.getElementById('qboverlay').classList.remove('open');}
+
+// doQBPush — real async fetch to n8n WF-5 via secure webhook injected at build time
+let qbRunning=false;
+async function doQBPush(){
+  if(qbRunning)return;
+  if(!QB_PUSH_URL||QB_PUSH_URL==='%%QB_PUSH_URL%%'){
+    closeQB();
+    toast('Not configured','QB_PUSH_URL not set — run a Netlify deploy first','info');
+    return;
+  }
+  qbRunning=true;
+  const btn=document.getElementById('qb-confirm');
+  btn.disabled=true;
+  btn.innerHTML='<i class="ti ti-loader spin" aria-hidden="true"></i> Pushing…';
+  try{
+    const res=await fetch(QB_PUSH_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Webhook-Secret':QB_PUSH_SECRET},
+      body:JSON.stringify({
+        triggered_by:'dashboard',
+        ts:Date.now(),
+        date_from: dateFrom||null,
+        date_to:   dateTo||null
+      })
+    });
+    if(!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
+    const data=await res.json();
+    closeQB();
+    if(data.status==='ok'){
+      // Optimistically mark the pushed transactions locally
+      TX.filter(t=>t.st==='complete'&&txnInDateRange(t)).forEach(t=>t.st='pushed');
+      updStats();buildList();buildSheet();buildRecent();buildAttention();
+      toast('QuickBooks Sync',`${data.pushed} transaction${data.pushed!==1?'s':''} pushed to QBO successfully`,'success');
+    } else {
+      throw new Error(data.message||'Push returned unexpected response');
+    }
+  } catch(err){
+    toast('Push failed',err.message,'info');
+    console.error('[QB Push]',err);
+  } finally {
+    btn.disabled=false;
+    btn.innerHTML='<i class="ti ti-send" aria-hidden="true"></i> Confirm &amp; Push';
+    qbRunning=false;
+  }
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeQB();});
+
+// ─── CARDHOLDERS ─────────────────────────────────────────────────────────────
+function buildHolders(){
+  const g=document.getElementById('holdergrid');if(!g)return;
+  if(!Object.keys(H).length){
+    g.innerHTML='<div class="dempty" style="grid-column:span 2"><i class="ti ti-inbox"></i><span>Waiting for cardholder data from Google Sheets…</span></div>';
+    return;
+  }
+  g.innerHTML=Object.entries(H).map(([card,h])=>{
+    const mine=TX.filter(t=>t.c===card);
+    const done=mine.filter(t=>t.st==='complete'||t.st==='pushed').length;
+    const pend=mine.filter(t=>t.st==='pending'||t.st==='notified').length;
+    const spend=mine.reduce((a,t)=>a+parseFloat(t.a||0),0);
+    const rate=mine.length?Math.round(done/mine.length*100):0;
+    return `<div class="holdercard">
+      <div class="holderhdr">
+        ${av(card,46)}
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:700">${h.name}</div>
+          <div style="font-size:12px;color:var(--t3)">${h.role||'Cardholder'} · Card ••••${card}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${rate===100?'var(--teal)':rate>=50?'var(--amber)':'var(--blue)'}">${rate}%</div>
+          <div style="font-size:10px;color:var(--t3)">filed</div>
+        </div>
+      </div>
+      <div class="holderstats">
+        <div><div class="hstatval">${mine.length}</div><div class="hstatlbl">Total</div></div>
+        <div><div class="hstatval" style="color:var(--teal)">${done}</div><div class="hstatlbl">Complete</div></div>
+        <div><div class="hstatval" style="color:${pend>0?'var(--blue)':'var(--t3)'}">${pend}</div><div class="hstatlbl">Pending</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <span style="font-size:12px;color:var(--t3)">Total spend</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--amber)">${fmt(spend)}</span>
+      </div>
+      <div class="prog" style="height:5px;margin-bottom:14px"><div class="progfill" style="width:${rate}%;background:${rate===100?'var(--teal)':rate>=50?'var(--amber)':'var(--blue)'}"></div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" style="flex:1;justify-content:center" onclick="filt('${card}',null);go('feed');">View txns</button>
+        ${pend>0?`<button class="btn btn-sm" style="color:var(--amber);border-color:var(--amberRing)" onclick="toast('Slack','Reminder sent to ${h.name} for ${pend} pending txn${pend>1?'s':''}','info')">Remind</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── OVERVIEW: RECENT + ATTENTION ────────────────────────────────────────────
+function buildRecent(){
+  const el=document.getElementById('ov-recent');if(!el)return;
+  const recent=TX.slice(0,5);
+  if(!recent.length){el.innerHTML='<div class="dempty"><i class="ti ti-inbox"></i><span>No transactions yet</span></div>';return;}
+  el.innerHTML=recent.map(t=>`
+    <div class="txnitem" onclick="go('feed');sel('${t.id}')" role="button" tabindex="0" style="cursor:pointer">
+      ${av(t.c,32)}
+      <div><div class="merchant" style="font-size:12px">${t.m}</div><div class="txnmeta">${ch(t.c).name} · ${t.tm||''}</div></div>
+      <div><div class="amount" style="font-size:12px">${fmt(t.a)}</div><div class="txndate">${t.dt}</div></div>
+      <div>${badge(t.st)}</div>
+    </div>`).join('');
+}
+function buildAttention(){
+  const el=document.getElementById('ov-attention');if(!el)return;
+  const pend=TX.filter(t=>t.st==='pending'||t.st==='notified');
+  if(!pend.length){el.innerHTML='<div style="padding:24px 16px;text-align:center;color:var(--t3);font-size:13px"><i class="ti ti-circle-check" style="color:var(--teal);font-size:28px;display:block;margin-bottom:8px"></i>All caught up!</div>';return;}
+  el.innerHTML=pend.map(t=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--bdr);cursor:pointer" onclick="go('feed');sel('${t.id}')" role="button" tabindex="0">
+      ${av(t.c,28)}
+      <div style="flex:1"><div style="font-size:12px;font-weight:600">${t.m}</div><div style="font-size:11px;color:var(--t3)">${ch(t.c).name} · ${fmt(t.a)}</div></div>
+      ${badge(t.st)}
+    </div>`).join('');
+}
+
+// ─── EXPORT (real CSV download) ───────────────────────────────────────────────
+function doExport(){
+  const btn=document.getElementById('export-btn');
+  const headers=['Date','Cardholder','Card','Merchant','Amount','Purpose','Project','Receipt','Receipt URL','Notes','Status'];
+  const rows=TX.map(t=>{
+    const h=ch(t.c);
+    return [t.dt,h.name,'••••'+t.c,t.m,parseFloat(t.a||0).toFixed(2),
+            t.pu||'',t.pr||'',(t.rc||t.rc_url)?'Yes':'No',
+            t.rc_url||'',t.no||'',t.st];
+  });
+  const csv=[headers,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='chase_transactions_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  btn.innerHTML='<i class="ti ti-check" aria-hidden="true"></i> Exported!';
+  btn.classList.add('btn-teal');
+  setTimeout(()=>{btn.innerHTML='<i class="ti ti-download" aria-hidden="true"></i> Export CSV';btn.classList.remove('btn-teal');},2500);
+  toast('Export',`CSV downloaded — ${TX.length} transaction${TX.length!==1?'s':''}  `,'success');
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function toast(title,msg,type='info'){
+  const icons={success:'ti-circle-check','new-txn':'ti-bolt',info:'ti-info-circle'};
+  const colors={success:'var(--teal)','new-txn':'var(--amber)',info:'var(--blue)'};
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<i class="ti ${icons[type]||'ti-info-circle'}" style="color:${colors[type]||'var(--blue)'}" aria-hidden="true"></i><div><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div>`;
+  const container=document.getElementById('toasts');
+  container.appendChild(el);
+  setTimeout(()=>el.remove(),5500);
+}
+
+// ─── CHARTS ──────────────────────────────────────────────────────────────────
+function initCharts(){
+  Chart.defaults.color='#4F6285';
+  Chart.defaults.borderColor='rgba(255,255,255,0.06)';
+  Chart.defaults.font.family="'Inter',system-ui,sans-serif";
+  Chart.defaults.font.size=11;
+
+  // Build last-7-days labels from real dates (no hardcoded demo data)
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    days.push({
+      label: i===0?'Today':d.toLocaleDateString('en-US',{weekday:'short'}),
+      iso:   d.toISOString().slice(0,10)
+    });
+  }
+
+  // Collect unique projects from real TX data
+  const projects=[...new Set(TX.map(t=>t.pr).filter(Boolean))].slice(0,5);
+  const projectColors=['rgba(245,158,11,.7)','rgba(96,165,250,.7)','rgba(16,185,129,.7)','rgba(167,139,250,.7)','rgba(248,113,113,.7)'];
+
+  const datasets = projects.length
+    ? projects.map((proj,i)=>({
+        label: proj,
+        data:  days.map(d=>TX.filter(t=>t.pr===proj&&t.dt===d.iso).reduce((a,t)=>a+parseFloat(t.a||0),0)),
+        backgroundColor: projectColors[i%projectColors.length],
+        borderRadius:4, barPercentage:.7
+      }))
+    : [{
+        label:'No data yet',
+        data: days.map(()=>0),
+        backgroundColor:'rgba(255,255,255,0.04)',
+        borderRadius:4, barPercentage:.7
+      }];
+
+  new Chart(document.getElementById('chartProject'),{
+    type:'bar',
+    data:{ labels:days.map(d=>d.label), datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ display:projects.length>0, labels:{boxWidth:11,boxHeight:11,borderRadius:3,padding:16,color:'#8B9CB8',usePointStyle:true}},
+        ...(projects.length===0 && { annotation:{} })
+      },
+      scales:{
+        x:{stacked:true,grid:{display:false},ticks:{color:'#4F6285'}},
+        y:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#4F6285',callback:v=>'$'+v.toLocaleString()},min:0}
+      }
+    }
+  });
+
+  // Donut — only render when real cardholder + spend data exists
+  const cardSpend=Object.entries(H).map(([card,h])=>({
+    label:h.name,
+    val:TX.filter(t=>t.c===card).reduce((a,t)=>a+parseFloat(t.a||0),0),
+    col:h.col||h.color||'#8B9CB8'
+  })).filter(x=>x.val>0);
+
+  if(cardSpend.length){
+    new Chart(document.getElementById('chartCard'),{
+      type:'doughnut',
+      data:{
+        labels:cardSpend.map(x=>x.label),
+        datasets:[{data:cardSpend.map(x=>x.val),backgroundColor:cardSpend.map(x=>x.col+'BF'),borderColor:cardSpend.map(x=>x.col),borderWidth:1.5,hoverOffset:8}]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,cutout:'68%',
+        plugins:{
+          legend:{display:true,position:'bottom',labels:{boxWidth:10,boxHeight:10,borderRadius:3,padding:10,color:'#8B9CB8',usePointStyle:true}},
+          tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.parsed)}`}}
+        }
+      }
+    });
+  } else {
+    // Empty state — no data yet
+    const canvas=document.getElementById('chartCard');
+    const ctx=canvas.getContext('2d');
+    canvas.parentElement.innerHTML=`
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--t3)">
+        <i class="ti ti-chart-donut" style="font-size:32px;opacity:.25"></i>
+        <span style="font-size:12px">No spend data yet</span>
+      </div>`;
+  }
+}
+
+// ─── STATUS FILTER ───────────────────────────────────────────────────────────
+function toggleStatusFilter(){
+  const pop=document.getElementById('sf-pop');
+  const isOpen=pop.style.display==='block';
+  closeAllPopovers();
+  pop.style.display=isOpen?'none':'block';
+}
+
+function setSFilter(status, el){
+  sFilter=status;
+  document.querySelectorAll('.sf-opt').forEach(o=>o.classList.remove('on'));
+  if(el) el.classList.add('on');
+  // Show amber dot on filter button when not "ALL"
+  const dot=document.getElementById('sf-dot');
+  if(dot) dot.style.display=sFilter==='ALL'?'none':'block';
+  closeAllPopovers();
+  buildList();
+}
+
+// ─── DATE FILTER ─────────────────────────────────────────────────────────────
+function toggleDatePicker(){
+  const pop=document.getElementById('dp-pop');
+  const isOpen=pop.style.display==='block';
+  closeAllPopovers();
+  pop.style.display=isOpen?'none':'block';
+}
+
+function setQuickDate(type, el){
+  const now=new Date();
+  const toISO=d=>d.toISOString().slice(0,10);
+  activeDateQuick=type;
+  document.querySelectorAll('.dp-qbtn').forEach(b=>b.classList.remove('on'));
+  if(el) el.classList.add('on');
+  if(type==='today'){
+    dateFrom=dateTo=toISO(now);
+  } else if(type==='week'){
+    const mon=new Date(now);
+    mon.setDate(now.getDate()-((now.getDay()||7)-1));
+    dateFrom=toISO(mon); dateTo=toISO(now);
+  } else if(type==='month'){
+    dateFrom=toISO(new Date(now.getFullYear(),now.getMonth(),1));
+    dateTo=toISO(now);
+  } else {
+    dateFrom=dateTo='';
+  }
+  const fromEl=document.getElementById('dp-from');
+  const toEl  =document.getElementById('dp-to');
+  if(fromEl) fromEl.value=dateFrom;
+  if(toEl)   toEl.value  =dateTo;
+  _applyDateState();
+  closeAllPopovers();
+}
+
+function onDateInputChange(){
+  // Clear quick-select highlight when user manually edits dates
+  document.querySelectorAll('.dp-qbtn').forEach(b=>b.classList.remove('on'));
+  activeDateQuick='custom';
+}
+
+function applyDateFilter(){
+  dateFrom=document.getElementById('dp-from')?.value||'';
+  dateTo  =document.getElementById('dp-to')?.value  ||'';
+  // Swap if from > to
+  if(dateFrom&&dateTo&&dateFrom>dateTo){[dateFrom,dateTo]=[dateTo,dateFrom];}
+  _applyDateState();
+  closeAllPopovers();
+}
+
+function clearDateFilter(){
+  dateFrom=dateTo=''; activeDateQuick='all';
+  const fromEl=document.getElementById('dp-from');
+  const toEl  =document.getElementById('dp-to');
+  if(fromEl) fromEl.value='';
+  if(toEl)   toEl.value  ='';
+  document.querySelectorAll('.dp-qbtn').forEach(b=>b.classList.remove('on'));
+  const allBtn=document.getElementById('dp-all-btn');
+  if(allBtn) allBtn.classList.add('on');
+  _applyDateState();
+}
+
+function _applyDateState(){
+  // Update label button
+  const lbl=document.getElementById('dp-label');
+  const dot=document.getElementById('dp-dot');
+  const badge=document.getElementById('dp-active-badge');
+  const rangeText=document.getElementById('dp-range-text');
+  const hasRange=!!(dateFrom||dateTo);
+  if(lbl){
+    if(!hasRange)          lbl.textContent='All dates';
+    else if(dateFrom===dateTo) lbl.textContent=dateFrom;
+    else lbl.textContent=(dateFrom||'…')+' → '+(dateTo||'…');
+  }
+  if(dot)   dot.style.display=hasRange?'block':'none';
+  if(badge) badge.style.display=hasRange?'flex':'none';
+  if(rangeText&&hasRange){
+    rangeText.textContent=(dateFrom===dateTo?dateFrom:(dateFrom||'…')+' → '+(dateTo||'…'));
+  }
+  buildSheet();
+}
+
+// ─── CLOSE ALL POPOVERS ───────────────────────────────────────────────────────
+function closeAllPopovers(){
+  const sfp=document.getElementById('sf-pop');
+  const dpp=document.getElementById('dp-pop');
+  if(sfp) sfp.style.display='none';
+  if(dpp) dpp.style.display='none';
+}
+// Close on outside click
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.sf-wrap')&&!e.target.closest('.dp-wrap')) closeAllPopovers();
+});
+
+
+// ─── SYSTEM STATUS ───────────────────────────────────────────────────────────
+// wfLive filled by pollN8nStatus(); state: 'on'|'warn'|'off'|'err'
+let _wfLive = {};
+
+function applyDot(id, state){
+  const el=document.getElementById(id);
+  if(el) el.className=`sysdot ${state}`;
+}
+
+function initSysStatus(){
+  const navMap={n8n:'dot-n8n',slack:'dot-slack',sheets:'dot-sheets',qb:'dot-qb',plaid:'dot-plaid'};
+  Object.entries(navMap).forEach(([svc,id])=>applyDot(id, SYS_STATUS[svc]||'off'));
+  const coreOn=SYS_STATUS.n8n==='on'&&SYS_STATUS.plaid==='on';
+  ['dot-overview','dot-recent','dot-feed'].forEach(id=>applyDot(id,coreOn?'on':'off'));
+  const ovLbl=document.getElementById('dot-overview-lbl');
+  if(ovLbl) ovLbl.textContent=coreOn?'Live — last sync '+new Date(SYS_STATUS.syncTs).toLocaleTimeString():'Not connected — complete setup to see live data';
+  const feedLbl=document.getElementById('dot-feed-lbl');
+  if(feedLbl) feedLbl.textContent=coreOn?'Live':'Not connected';
+  const wfDot=document.getElementById('dot-workflow');
+  const wfLbl=document.getElementById('dot-workflow-lbl');
+  if(wfDot) wfDot.className=`sysdot ${coreOn?'on':'off'}`;
+  if(wfLbl) wfLbl.textContent=coreOn?`Active — ${SYS_STATUS.txnCount} txns, ${SYS_STATUS.cardCount} cards`:'Not connected — complete setup to activate';
+  pollN8nStatus();
+  setInterval(pollN8nStatus,90000);
+}
+
+async function pollN8nStatus(){
+  if(!N8N_STATUS_URL||N8N_STATUS_URL.startsWith('%%')) return;
+  let data;
+  try{
+    const r=await fetch(N8N_STATUS_URL+'?_nc='+Date.now(),{cache:'no-store'});
+    if(!r.ok) throw new Error('http '+r.status);
+    data=await r.json();
+  }catch(e){
+    applyDot('dot-n8n','err');
+    applyDot('dot-workflow','err');
+    for(let i=1;i<=6;i++) applyDot(`dot-wf${i}`,'err');
+    const wfLbl=document.getElementById('dot-workflow-lbl');
+    if(wfLbl) wfLbl.textContent='n8n unreachable — HF Space may be sleeping';
+    return;
+  }
+  if(!data.reachable){
+    applyDot('dot-n8n','err');
+    applyDot('dot-workflow','err');
+    for(let i=1;i<=6;i++) applyDot(`dot-wf${i}`,'err');
+    const wfLbl=document.getElementById('dot-workflow-lbl');
+    if(wfLbl) wfLbl.textContent='n8n unreachable — '+(data.error||'unknown error');
+    return;
+  }
+  const wfs=data.workflows||{};
+  const allActive=Object.values(wfs).every(w=>w.active===true);
+  const anyInactive=Object.values(wfs).some(w=>w.active===false);
+  const headerState=allActive?'on':anyInactive?'warn':'off';
+  applyDot('dot-n8n',headerState);
+  applyDot('dot-workflow',headerState);
+  const activeCount=Object.values(wfs).filter(w=>w.active===true).length;
+  const wfLbl=document.getElementById('dot-workflow-lbl');
+  if(wfLbl) wfLbl.textContent=`${activeCount}/6 workflows active`;
+  const keyToNum={WF1:1,WF2:2,WF3:3,WF4:4,WF5:5,WF6:6};
+  Object.entries(wfs).forEach(([key,wf])=>{
+    const n=keyToNum[key];if(!n) return;
+    applyDot(`dot-wf${n}`,wf.active===true?'on':wf.active===false?'warn':'off');
+  });
+  _wfLive=wfs;
+}
+
+// ─── AUTO-REFRESH POLLING ────────────────────────────────────────────────────
+(function startPolling(){
+  if(!SYNC_TS) return;
+  const base=SYNC_TS;
+  setInterval(async ()=>{
+    try{
+      const r=await fetch(location.pathname+'?_nc='+Date.now(),{cache:'no-store'});
+      if(!r.ok) return;
+      const txt=await r.text();
+      const m=txt.match(/const SYNC_TS = '([^']+)'/);
+      if(m&&m[1]&&m[1]!==base){
+        toast('Dashboard updated','New transaction data available — reloading…','success');
+        setTimeout(()=>location.reload(),2500);
+      }
+    }catch(e){}
+  },60000);
+})();
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+tick(); setInterval(tick,1000);
+updStats(); buildList(); buildRecent(); buildAttention();
+initCharts();
+initSysStatus();
+
+// Dynamic load toast
+(function(){
+  const cards=Object.keys(H).length;
+  const msg=TX.length
+    ? `${TX.length} transactions across ${cards} card${cards!==1?'s':''}. Monitoring active.`
+    : 'Waiting for live data — n8n will populate on first Plaid sync.';
+  toast('Dashboard loaded',msg,TX.length?'success':'info');
+})();
+</script>
+</body>
+</html>

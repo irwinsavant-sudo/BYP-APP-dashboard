@@ -1,0 +1,38 @@
+# netlify.toml
+# Netlify build configuration for Chase CC Dashboard
+# The QB_WEBHOOK_SECRET env var is stored ONLY in Netlify's encrypted
+# environment settings — never in this file, never in git.
+
+[build]
+  command   = "node inject_secrets.js"
+  publish   = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Security headers applied to every response
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options            = "DENY"
+    X-Content-Type-Options     = "nosniff"
+    X-XSS-Protection           = "1; mode=block"
+    Referrer-Policy            = "strict-origin-when-cross-origin"
+    Permissions-Policy         = "camera=(), microphone=(), geolocation=()"
+    Content-Security-Policy    = "default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.workers.dev; img-src 'self' data:; frame-ancestors 'none';"
+    Strict-Transport-Security  = "max-age=63072000; includeSubDomains; preload"
+    Cache-Control              = "no-store, no-cache, must-revalidate"
+
+# Prevent the dist/secrets-injected HTML from being cached so deploys
+# always serve the latest version with the freshest secret reference.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-store"
+
+# Redirect HTTP → HTTPS (Netlify enforces HTTPS automatically, but be explicit)
+[[redirects]]
+  from   = "http://chasedashdemo.netlify.app/*"
+  to     = "https://chasedashdemo.netlify.app/:splat"
+  status = 301
+  force  = true

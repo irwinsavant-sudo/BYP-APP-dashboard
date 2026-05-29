@@ -88,7 +88,8 @@ const replacements = {
   '%%PROJECTS_WEBHOOK_URL%%':     `${N8N_BASE_URL}/webhook/projects`,
   '%%PROJECTS_WEBHOOK_SECRET%%':  PROJECTS_SECRET,
   '%%PROJECTS_SHEET_URL%%':       process.env.PROJECTS_SHEET_URL || '',
-  '%%N8N_STATUS_URL%%':          process.env.N8N_STATUS_URL    || '',  // Cloudflare Worker
+  '%%N8N_STATUS_URL%%':           process.env.N8N_STATUS_URL    || '',  // Cloudflare Worker /workflow-status
+  '%%DASHBOARD_DATA_URL%%':       `${N8N_BASE_URL}/dashboard-data`,     // Cloudflare Worker /dashboard-data
 };
 
 let replacedCount = 0;

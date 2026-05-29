@@ -772,7 +772,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;f
 
 // ── Cardholder map  card_last4 → { name, init, col, bg, role } ─────────────
 // DATA:CARDHOLDERS:START
-const H = {};
+let H = {};
 // DATA:CARDHOLDERS:END
 
 // ── System status (injected by WF-1; determines live indicator states) ───────
@@ -1682,7 +1682,6 @@ async function loadDashboardData(silent=false){
     buildList();
     buildRecent();
     buildAttention();
-    initCharts();
 
     // Update overview dot label with sync time
     const ovLbl=document.getElementById('dot-overview-lbl');
@@ -1702,6 +1701,9 @@ async function loadDashboardData(silent=false){
   }catch(e){
     if(!silent) toast('Connection error','Could not reach Worker: '+e.message,'error');
   }
+  // initCharts is outside the fetch try/catch so Chart.js errors surface
+  // clearly instead of being swallowed as "Could not reach Worker"
+  try{ initCharts(); }catch(e){ console.error('initCharts failed:',e.message); }
 }
 
 // Poll for fresh data every 5 minutes

@@ -809,6 +809,7 @@ const PROJECTS_WEBHOOK_URL    = '%%PROJECTS_WEBHOOK_URL%%';
 const PROJECTS_WEBHOOK_SECRET = '%%PROJECTS_WEBHOOK_SECRET%%';
 const PROJECTS_SHEET_URL      = '%%PROJECTS_SHEET_URL%%';
 const N8N_STATUS_URL          = '%%N8N_STATUS_URL%%';
+const DASHBOARD_DATA_URL      = '%%DASHBOARD_DATA_URL%%'; // Worker /dashboard-data endpoint
 // DATA:WEBHOOK:END
 
 let selId=null, cfilt='ALL', sFilter='ALL';
@@ -1651,23 +1652,60 @@ async function pollN8nStatus(){
   _wfLive=wfs;
 }
 
-// ─── AUTO-REFRESH POLLING ────────────────────────────────────────────────────
-(function startPolling(){
-  if(!SYNC_TS) return;
-  const base=SYNC_TS;
-  setInterval(async ()=>{
-    try{
-      const r=await fetch(location.pathname+'?_nc='+Date.now(),{cache:'no-store'});
-      if(!r.ok) return;
-      const txt=await r.text();
-      const m=txt.match(/const SYNC_TS = '([^']+)'/);
-      if(m&&m[1]&&m[1]!==base){
-        toast('Dashboard updated','New transaction data available — reloading…','success');
-        setTimeout(()=>location.reload(),2500);
+// ─── LIVE DATA LOAD ──────────────────────────────────────────────────────────
+// Fetches TX[] and H{} from the Cloudflare Worker /dashboard-data endpoint.
+// Runs on page load and every 5 minutes. No page reload needed.
+let _lastSyncTs = '';
+
+async function loadDashboardData(silent=false){
+  if(!DASHBOARD_DATA_URL||DASHBOARD_DATA_URL.startsWith('%%')) return;
+  try{
+    const r=await fetch(DASHBOARD_DATA_URL+'?_nc='+Date.now(),{cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(d.error){
+      if(!silent) toast('Data error',d.error,'error');
+      return;
+    }
+
+    // Populate global TX and H, then re-render everything
+    TX=d.transactions||[];
+    const newH=d.cardholders||{};
+    Object.keys(newH).forEach(k=>{H[k]=newH[k];});
+
+    // Update SYS_STATUS counts now that we have real data
+    SYS_STATUS.txnCount=TX.length;
+    SYS_STATUS.cardCount=Object.keys(H).length;
+    if(d.syncTs) SYS_STATUS.syncTs=d.syncTs;
+
+    updStats();
+    buildList();
+    buildRecent();
+    buildAttention();
+    initCharts();
+
+    // Update overview dot label with sync time
+    const ovLbl=document.getElementById('dot-overview-lbl');
+    if(ovLbl&&d.syncTs) ovLbl.textContent='Live — last sync '+new Date(d.syncTs).toLocaleTimeString();
+    const wfLbl=document.getElementById('dot-workflow-lbl');
+    if(wfLbl&&TX.length) wfLbl.textContent=`Active — ${TX.length} txns, ${Object.keys(H).length} cards`;
+
+    // Toast only on first load or when new transactions arrive
+    if(d.syncTs&&d.syncTs!==_lastSyncTs){
+      if(_lastSyncTs&&d.count>TX.length){
+        toast('New transactions','Dashboard updated with latest Plaid data','success');
+      } else if(!_lastSyncTs&&!silent){
+        toast('Dashboard loaded',`${TX.length} transactions across ${Object.keys(H).length} card${Object.keys(H).length!==1?'s':''}. Monitoring active.`,'success');
       }
-    }catch(e){}
-  },60000);
-})();
+      _lastSyncTs=d.syncTs;
+    }
+  }catch(e){
+    if(!silent) toast('Connection error','Could not reach Worker: '+e.message,'error');
+  }
+}
+
+// Poll for fresh data every 5 minutes
+setInterval(()=>loadDashboardData(true), 5*60*1000);
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 tick(); setInterval(tick,1000);
@@ -1675,14 +1713,8 @@ updStats(); buildList(); buildRecent(); buildAttention();
 initCharts();
 initSysStatus();
 
-// Dynamic load toast
-(function(){
-  const cards=Object.keys(H).length;
-  const msg=TX.length
-    ? `${TX.length} transactions across ${cards} card${cards!==1?'s':''}. Monitoring active.`
-    : 'Waiting for live data — n8n will populate on first Plaid sync.';
-  toast('Dashboard loaded',msg,TX.length?'success':'info');
-})();
+// Load live transaction data from Cloudflare Worker → Google Sheets
+loadDashboardData(false);
 </script>
 </body>
 </html>

@@ -32,7 +32,7 @@
 
 # Redirect HTTP → HTTPS (Netlify enforces HTTPS automatically, but be explicit)
 [[redirects]]
-  from   = "http://chasedashdemo.netlify.app/*"
-  to     = "https://chasedashdemo.netlify.app/:splat"
+  from   = "https://byp-app-dashboard.netlify.app/*"
+  to     = "https://byp-app-dashboard.netlify.app/:splat"
   status = 301
   force  = true

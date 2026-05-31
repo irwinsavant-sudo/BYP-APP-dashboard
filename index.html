@@ -1437,6 +1437,8 @@ function initCharts(){
         borderRadius:4, barPercentage:.7
       }];
 
+  const _cp = Chart.getChart('chartProject');
+  if (_cp) _cp.destroy();
   new Chart(document.getElementById('chartProject'),{
     type:'bar',
     data:{ labels:days.map(d=>d.label), datasets },
@@ -1461,6 +1463,8 @@ function initCharts(){
   })).filter(x=>x.val>0);
 
   if(cardSpend.length){
+    const _cc = Chart.getChart('chartCard');
+    if (_cc) _cc.destroy();
     new Chart(document.getElementById('chartCard'),{
       type:'doughnut',
       data:{

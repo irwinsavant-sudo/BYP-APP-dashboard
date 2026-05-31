@@ -4,7 +4,7 @@
 # environment settings — never in this file, never in git.
 
 [build]
-  command   = "node inject_secrets.js"
+  command   = "node inject_secrets.js && cp netlify.toml dist/"
   publish   = "dist"
 
 [build.environment]

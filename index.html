@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chase CC — Dashboard Center</title>
+<title>Backyard Pod — Accounting App</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f172a'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='700' font-size='16' fill='%2310b981'%3EBP%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -295,9 +295,9 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;f
 <!-- ═══ TOP BAR ════════════════════════ -->
 <header class="topbar" role="banner">
   <div class="brand">
-    <div class="brandmark" aria-hidden="true">CC</div>
+    <div class="brandmark" aria-hidden="true">BP</div>
     <div>
-      <div class="brand-name">Chase CC Dashboard</div>
+      <div class="brand-name">Backyard Pod — Accounting App</div>
       <div class="brand-sub">Transaction monitoring center</div>
     </div>
   </div>
@@ -1438,7 +1438,7 @@ function initCharts(){
         borderRadius:4, barPercentage:.7
       }];
 
-  const _cp=Chart.getChart('chartProject'); if(_cp) _cp.destroy();
+  const _cp=Chart.getChart(document.getElementById('chartProject')); if(_cp) _cp.destroy();
   new Chart(document.getElementById('chartProject'),{
     type:'bar',
     data:{ labels:days.map(d=>d.label), datasets },
@@ -1463,7 +1463,7 @@ function initCharts(){
   })).filter(x=>x.val>0);
 
   if(cardSpend.length){
-    const _cc=Chart.getChart('chartCard'); if(_cc) _cc.destroy();
+    const _cc=Chart.getChart(document.getElementById('chartCard')); if(_cc) _cc.destroy();
     new Chart(document.getElementById('chartCard'),{
       type:'doughnut',
       data:{
@@ -1776,10 +1776,10 @@ setInterval(()=>loadDashboardData(true), 5*60*1000);
 // ─── INIT ────────────────────────────────────────────────────────────────────
 tick(); setInterval(tick,1000);
 updStats(); buildList(); buildRecent(); buildAttention();
-initCharts();
 initSysStatus();
 
 // Load live transaction data from Cloudflare Worker → Google Sheets
+// initCharts() runs inside loadDashboardData() after data is available
 loadDashboardData(false);
 </script>
 </body>

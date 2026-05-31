@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Backyard Pod — Accounting App</title>
+<title>Chase CC — Dashboard Center</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f172a'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='700' font-size='16' fill='%2310b981'%3EBP%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
@@ -294,9 +295,9 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;f
 <!-- ═══ TOP BAR ════════════════════════ -->
 <header class="topbar" role="banner">
   <div class="brand">
-    <div class="brandmark" aria-hidden="true">BP</div>
+    <div class="brandmark" aria-hidden="true">CC</div>
     <div>
-      <div class="brand-name">Backyard Pod — Accounting App</div>
+      <div class="brand-name">Chase CC Dashboard</div>
       <div class="brand-sub">Transaction monitoring center</div>
     </div>
   </div>
@@ -876,11 +877,11 @@ function go(page, skipHistory){
   if(page==='cardholders')buildHolders();
   if(page==='overview'){buildRecent();buildAttention();}
   if(page==='projects')buildProjects();
-  // Update URL hash without triggering hashchange listener
+  // Update URL hash — try/catch silences Claude's sandboxed iframe SecurityError
   if(!skipHistory) try{ history.pushState(null,'','#'+page); }catch(e){}
 }
 
-// Restore tab from URL hash on load, and handle browser back/forward
+// Restore tab from URL hash on load; handle browser back/forward
 function resolveHash(){
   const hash=location.hash.replace('#','');
   go(VALID_PAGES.includes(hash)?hash:'overview', true);
@@ -1437,8 +1438,7 @@ function initCharts(){
         borderRadius:4, barPercentage:.7
       }];
 
-  const _cp = Chart.getChart('chartProject');
-  if (_cp) _cp.destroy();
+  const _cp=Chart.getChart('chartProject'); if(_cp) _cp.destroy();
   new Chart(document.getElementById('chartProject'),{
     type:'bar',
     data:{ labels:days.map(d=>d.label), datasets },
@@ -1463,8 +1463,7 @@ function initCharts(){
   })).filter(x=>x.val>0);
 
   if(cardSpend.length){
-    const _cc = Chart.getChart('chartCard');
-    if (_cc) _cc.destroy();
+    const _cc=Chart.getChart('chartCard'); if(_cc) _cc.destroy();
     new Chart(document.getElementById('chartCard'),{
       type:'doughnut',
       data:{
@@ -1605,7 +1604,7 @@ document.addEventListener('click',e=>{
 
 
 // ─── SYSTEM STATUS ───────────────────────────────────────────────────────────
-// wfLive filled by pollN8nStatus(); state: 'on'|'warn'|'off'|'err'
+// _wfLive filled by pollN8nStatus(); each entry: { active, edited, err }
 let _wfLive = {};
 
 function applyDot(id, state){
@@ -1613,37 +1612,37 @@ function applyDot(id, state){
   if(el) el.className=`sysdot ${state}`;
 }
 
-// ── Derive a single worst-case state from a list of WF keys ──────────────────
-// Priority: err > warn > off > on
+// Worst-case state across a list of WF keys.
+// Priority: err > warn(edited+inactive) > off(inactive) > on(active)
 function _worstState(wfKeys){
   const priority={err:4,warn:3,off:2,on:1};
   let worst='off';
   wfKeys.forEach(key=>{
     const wf=_wfLive[key];
     if(!wf) return;
-    const s=wf.active===true?'on':wf.active===false?'warn':wf.err?'err':'off';
+    let s;
+    if(wf.err)          s='err';
+    else if(wf.active)  s='on';
+    else if(wf.edited)  s='warn';
+    else                s='off';
     if((priority[s]||0)>(priority[worst]||0)) worst=s;
   });
   return worst;
 }
 
-// ── Sync sysdots from current _wfLive state ───────────────────────────────────
+// Derive header sysdots + Live badge from _wfLive.
+// Mapping:
+//   n8n + Plaid  <- WF1
+//   Slack        <- worst(WF2, WF3)
+//   Sheets       <- worst(WF4, WF6)
+//   QuickBooks   <- WF5
 function syncSysdotsFromWFs(){
-  // n8n + Plaid = WF1
   const wf1State=_worstState(['WF1']);
-  applyDot('dot-n8n', wf1State);
+  applyDot('dot-n8n',   wf1State);
   applyDot('dot-plaid', wf1State);
-
-  // Slack = WF2 + WF3 (worst of both)
-  applyDot('dot-slack', _worstState(['WF2','WF3']));
-
-  // Sheets = WF4 + WF6 (worst of both)
+  applyDot('dot-slack',  _worstState(['WF2','WF3']));
   applyDot('dot-sheets', _worstState(['WF4','WF6']));
-
-  // QuickBooks = WF5
-  applyDot('dot-qb', _worstState(['WF5']));
-
-  // Netlify Live badge: show only when n8n dot is 'on'
+  applyDot('dot-qb',     _worstState(['WF5']));
   const badge=document.getElementById('netlify-live-badge');
   if(badge) badge.style.display=wf1State==='on'?'inline':'none';
 }
@@ -1671,12 +1670,9 @@ async function pollN8nStatus(){
     if(!r.ok) throw new Error('http '+r.status);
     data=await r.json();
   }catch(e){
-    // n8n unreachable — mark all WFs as err
     for(let i=1;i<=6;i++){
       const key='WF'+i;
-      _wfLive[key]=_wfLive[key]||{};
-      _wfLive[key].active=false;
-      _wfLive[key].err=true;
+      _wfLive[key]={active:false,edited:false,err:true};
     }
     applyDot('dot-workflow','err');
     for(let i=1;i<=6;i++) applyDot(`dot-wf${i}`,'err');
@@ -1688,9 +1684,7 @@ async function pollN8nStatus(){
   if(!data.reachable){
     for(let i=1;i<=6;i++){
       const key='WF'+i;
-      _wfLive[key]=_wfLive[key]||{};
-      _wfLive[key].active=false;
-      _wfLive[key].err=true;
+      _wfLive[key]={active:false,edited:false,err:true};
     }
     applyDot('dot-workflow','err');
     for(let i=1;i<=6;i++) applyDot(`dot-wf${i}`,'err');
@@ -1703,14 +1697,18 @@ async function pollN8nStatus(){
   const keyToNum={WF1:1,WF2:2,WF3:3,WF4:4,WF5:5,WF6:6};
   Object.entries(wfs).forEach(([key,wf])=>{
     const n=keyToNum[key];if(!n) return;
-    const dotState=wf.active===true?'on':wf.edited===true?'warn':'off';
+    _wfLive[key]={active:!!wf.active, edited:!!wf.edited, err:!!wf.err};
+    let dotState;
+    if(wf.err)          dotState='err';
+    else if(wf.active)  dotState='on';
+    else if(wf.edited)  dotState='warn';
+    else                dotState='off';
     applyDot(`dot-wf${n}`, dotState);
-    // Store state for sysdot derivation
-    _wfLive[key]={active:wf.active===true, edited:wf.edited===true, err:false};
   });
   const allActive=Object.values(wfs).every(w=>w.active===true);
-  const anyEdited=Object.values(wfs).some(w=>w.edited===true);
-  const headerState=allActive?'on':anyEdited?'warn':'off';
+  const anyEdited=Object.values(wfs).some(w=>w.edited===true&&!w.active);
+  const anyErr   =Object.values(wfs).some(w=>w.err===true);
+  const headerState=anyErr?'err':allActive?'on':anyEdited?'warn':'off';
   applyDot('dot-workflow',headerState);
   const activeCount=Object.values(wfs).filter(w=>w.active===true).length;
   const wfLbl=document.getElementById('dot-workflow-lbl');
